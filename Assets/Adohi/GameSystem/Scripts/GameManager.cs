@@ -39,7 +39,7 @@ namespace ZombieRun.Adohi.GameSystem
 
         public void StageStart()
         {
-            currentState.Value += 1;
+            currentStage.Value += 1;
             timeFromStart = 0f;
         }
 
