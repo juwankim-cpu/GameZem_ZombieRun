@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityAtoms.BaseAtoms;
 using UnityEngine;
@@ -6,7 +7,12 @@ namespace ZombieRun.Adohi.GameSystem
 {
     public class GameManager : MonoBehaviour
     {
-        public IntReference currentState;
+
+        public List<FloatReference> stageClearScoreConfig;
+
+        public IntReference currentStage;
+        public FloatReference currentScore;
+
 
         public float timeFromStart;
 
