@@ -53,6 +53,11 @@ public class ObstacleManager : MonoBehaviour
         // 씬이 바뀌어도 계속 실행되도록 무한 루프 설정
         while (true)
         {
+            if (GameStatus.sitDown)
+            {
+                yield return null; // 한 프레임 대기 (CPU 부하 방지)
+                continue; // 아래 생성 로직을 건너뛰고 루프 처음으로 돌아가 다시 sitDown 상태를 확인합니다.
+            }
             // ⭐️ 먼저 정해진 시간 간격만큼 대기합니다.
             yield return new WaitForSeconds(obstacleSpawnInterval); 
 

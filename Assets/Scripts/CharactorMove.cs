@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class CharactorMove : MonoBehaviour
 {
+    Animator p_Animator;
     [Header("이동 설정")]
     public float moveSpeed = 0.15f; // 이동 속도
 
@@ -18,6 +19,10 @@ public class CharactorMove : MonoBehaviour
     private float cameraTopBound;
     private float cameraBottomBound;
     
+    void Init()
+    {
+        p_Animator = GetComponent<Animator>();
+    }
     void Start()
     {
         // 메인 카메라 참조
@@ -33,20 +38,33 @@ public class CharactorMove : MonoBehaviour
 
     void Update()
     {
+        p_Animator.SetBool("Walk", false);
         // 이동 입력 처리
         Vector3 movement = Vector3.zero;
         
-        if(Input.GetKey(KeyCode.W))
+        if(Input.GetKey(KeyCode.UpArrow))
+        {
             movement += new Vector3(0, 1, 0);
-        
-        if(Input.GetKey(KeyCode.A))
-            movement += new Vector3(-1, 0, 0);
-    
-        if(Input.GetKey(KeyCode.S))
+            p_Animator.SetBool("Walk", true);
+        }
+            
+        if(Input.GetKey(KeyCode.DownArrow))
+        {
             movement += new Vector3(0, -1, 0);
+            p_Animator.SetBool("Walk", true);
+        }
+    
+        if(Input.GetKey(KeyCode.LeftArrow))
+        {
+            movement += new Vector3(-1, 0, 0);
+            p_Animator.SetBool("Walk", true);
+        }
         
-        if(Input.GetKey(KeyCode.D))
+        if(Input.GetKey(KeyCode.UpArrow))
+        {
             movement += new Vector3(1, 0, 0);
+            p_Animator.SetBool("Walk", true);
+        }
         
         // 이동 적용 (카메라 경계 제한 포함)
         if (movement != Vector3.zero)
@@ -66,18 +84,18 @@ public class CharactorMove : MonoBehaviour
         }
 
         // 앉기 기능
-        if (Input.GetKeyDown(KeyCode.Space)) // 키를 누르는 순간
+        if (Input.GetKeyDown(KeyCode.z)) // 키를 누르는 순간
         {    GameStatus.sitDown = !GameStatus.sitDown;
              //앉기 애니메이션 재생
         }
 
-        if (Input.GetKeyDown(KeyCode.Q))
+        if (Input.GetKeyDown(KeyCode.x))
         {
             //애교 Status값 갱신
             //애교 애니메이션 재생
         }
 
-        if (Input.GetKeyDown(KeyCode.E))
+        if (Input.GetKeyDown(KeyCode.c))
         {
             //공부 Status값 갱신
             //공부 애니메이션 재생
