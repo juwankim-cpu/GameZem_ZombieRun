@@ -6,8 +6,17 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
-    guid: 8c9cfa26abfee488c85f1582747f6a02
+    path: Assets/Adohi/MainGames/Scenes/Stage_1.unity
+    guid: 63329823849ecca49bd766c367dd7c3b
+  - enabled: 1
+    path: Assets/Adohi/MainGames/Scenes/Stage_2.unity
+    guid: 59d55f407cc167748af78d3aff49fe38
+  - enabled: 1
+    path: Assets/Adohi/MainGames/Scenes/Stage_3.unity
+    guid: 8b669c2f0fee3b448ba29dcc2090f0ca
+  - enabled: 1
+    path: Assets/Adohi/MainGames/Scenes/Stage_4.unity
+    guid: e4d38ae6e46770044bb761b40b8a9929
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0

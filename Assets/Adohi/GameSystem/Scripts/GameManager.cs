@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using com.cyborgAssets.inspectorButtonPro;
 using Cysharp.Threading.Tasks;
 using TMPro;
 using TMPro.Examples;
@@ -7,6 +8,7 @@ using Unity.VisualScripting;
 using UnityAtoms.BaseAtoms;
 using UnityEngine;
 using ZombieRun.Adohi.Ranking;
+using ZombieRun.Adohi.SceneManagement;
 using ZombieRun.Adohi.Titles;
 
 namespace ZombieRun.Adohi.GameSystem
@@ -14,13 +16,12 @@ namespace ZombieRun.Adohi.GameSystem
     public class GameManager : MonoBehaviour
     {
 
-        public List<FloatReference> stageClearScoreConfig;
+        public FloatReference stageClearScoreConfig;
         public IntReference currentStage;
 
         [Header("Score")]
         public FloatReference currentScore;
         public TextMeshProUGUI scoreText;
-        private float nextStageClearScore; // 다음 스테이지로 넘어갈 목표 점수
 
         public FloatReference currentHealth;
         public FloatReference currentBoost;
@@ -29,7 +30,6 @@ namespace ZombieRun.Adohi.GameSystem
         public TitleMover titleMover;
         public KeyCode titleStartKey = KeyCode.Space;
 
-        public BackgroundController backgroundController;
 
         [Header("UI")]
         public GameObject screenUI;
@@ -37,12 +37,23 @@ namespace ZombieRun.Adohi.GameSystem
         [Header("Ranking")]
         public RankingSystem rankingSystem;
 
+        public bool isFirstStage = false;
+
 
         public float timeFromStart;
+
+        [Header("Scene Transition")]
+        public SceneManagerWithTransition sceneManagerWithTransition;
 
         void Awake()
         {
             if (screenUI != null) screenUI.SetActive(false);
+
+            if (isFirstStage)
+            {
+                currentHealth.Value = 100f;
+                currentBoost.Value = 0f;
+            }
         }
 
         void Start()
@@ -54,9 +65,17 @@ namespace ZombieRun.Adohi.GameSystem
                 if (scoreText != null) scoreText.text = ((int)x).ToString() + "미터";
 
                 // 현재 점수가 다음 스테이지 클리어 점수를 넘으면 자동으로 다음 스테이지로 이동
-                if (x >= nextStageClearScore && nextStageClearScore < float.MaxValue)
+                if (x >= stageClearScoreConfig.Value && stageClearScoreConfig.Value < float.MaxValue)
                 {
                     MoveNextStage();
+                }
+            });
+
+            currentHealth.ObserveEveryValueChanged(x => x.Value).Subscribe(x =>
+            {
+                if (x <= 0f)
+                {
+                    GameEnd();
                 }
             });
 
@@ -70,10 +89,13 @@ namespace ZombieRun.Adohi.GameSystem
 
         public async UniTask PlayAsync()
         {
-            await TitleStartAsync();
+            if (isFirstStage)
+            {
+                await TitleStartAsync();
+            }
+
             StageStart();
             //show stage ui
-            if (screenUI != null) screenUI.SetActive(true);
             //hide stage ui
             //time scale 1
             //wait for stage end;
@@ -93,39 +115,33 @@ namespace ZombieRun.Adohi.GameSystem
 
         public void StageStart()
         {
-            currentStage.Value += 1;
-            timeFromStart = 0f;
-
-            currentScore.Value = 0f;
-            currentHealth.Value = 100f;
-            currentBoost.Value = 0f;
-
-            // 현재 스테이지의 클리어 점수 설정
-            int stageIndex = currentStage.Value - 1;
-            if (stageIndex >= 0 && stageIndex < stageClearScoreConfig.Count)
+            if (isFirstStage)
             {
-                nextStageClearScore = stageClearScoreConfig[stageIndex].Value;
-                Debug.Log($"스테이지 {currentStage.Value} 시작! 목표 점수: {nextStageClearScore}미터");
+
+                timeFromStart = 0f;
+                currentScore.Value = 0f;
             }
-            else
-            {
-                // 마지막 스테이지는 무한대
-                nextStageClearScore = float.MaxValue;
-                Debug.Log($"마지막 스테이지 {currentStage.Value} 시작! (무한)");
-            }
+
+            if (screenUI != null) screenUI.SetActive(true);
+
         }
 
+        [ProButton]
         public void MoveNextStage()
         {
             Debug.Log($"스테이지 {currentStage.Value} 클리어! 다음 스테이지로 이동");
+            //씬 트랜지션
+            //씬 이동
+            sceneManagerWithTransition.LoadNextScene();
 
-            // 배경을 다음 스테이지로 이동
-            backgroundController.MoveNextStage(currentStage.Value);
 
-            // 다음 스테이지 시작 (점수 초기화 및 다음 스테이지 목표 점수 설정)
-            StageStart();
         }
 
+        public void GameEnd()
+        {
+            Time.timeScale = 0f;
+            StageEndAsync();
+        }
 
         public async UniTask StageEndAsync()
         {

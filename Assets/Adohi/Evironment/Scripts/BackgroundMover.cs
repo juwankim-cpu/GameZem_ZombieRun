@@ -64,9 +64,9 @@ namespace ZombieRun.Adohi.Evironment
 
         void Start()
         {
-            if (sprites == null || sprites.Length == 0)
+            // Sprite가 설정되지 않았으면 아무것도 하지 않음
+            if (sprites == null || sprites.Length == 0 || sprites[0] == null)
             {
-                Debug.LogError("BackgroundMover: Sprite가 설정되지 않았습니다!");
                 return;
             }
 
