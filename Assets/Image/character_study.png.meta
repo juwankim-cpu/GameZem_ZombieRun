@@ -1,25 +1,13 @@
 fileFormatVersion: 2
-guid: 4f8f1238296e4bc488d96433e3e4e847
+guid: 1816ebb4658e544e991dd39fb7bddf99
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -5240138286427330706
-    second: character_idle_0
+      213: 6678738318212947462
+    second: character_study_0
   - first:
-      213: 382507575425190280
-    second: character_idle_1
-  - first:
-      213: 5917505638279905623
-    second: character_idle_2
-  - first:
-      213: -7896677694271337862
-    second: character_idle_3
-  - first:
-      213: -632547218646008683
-    second: character_idle_4
-  - first:
-      213: -7254382233607389928
-    second: character_idle_5
+      213: 5079704781363229708
+    second: character_study_1
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -111,87 +99,61 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 4
-    buildTarget: Android
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 4
-    buildTarget: iOS
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: character_idle_0
+      name: character_study_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 33
-        height: 63
+        width: 73
+        height: 66
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: 1db973a316b278943843cf29b27b7f03
-      internalID: -5240138286427330706
+      spriteID: 60e5fdc6d15afac50800000000000000
+      internalID: 6678738318212947462
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: character_idle_1
+      name: character_study_1
       rect:
         serializedVersion: 2
-        x: 33
+        x: 73
         y: 0
-        width: 33
-        height: 63
+        width: 73
+        height: 66
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: d1071c8589f1c824a96c87878e3e4a72
-      internalID: 382507575425190280
+      spriteID: c043201d59cbe7640800000000000000
+      internalID: 5079704781363229708
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: character_idle_2
+      name: character_study_2
       rect:
         serializedVersion: 2
-        x: 66
+        x: 146
         y: 0
-        width: 33
-        height: 63
+        width: 73
+        height: 66
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -200,74 +162,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: fc08ab08a47f20d40a4330c45bb8acf4
-      internalID: 5917505638279905623
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: character_idle_3
-      rect:
-        serializedVersion: 2
-        x: 99
-        y: 0
-        width: 33
-        height: 63
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 164c1bfec6760d241a8fe99561863a62
-      internalID: -7896677694271337862
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: character_idle_4
-      rect:
-        serializedVersion: 2
-        x: 132
-        y: 0
-        width: 33
-        height: 63
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 12ba5d2596e6c2c48936cc8a9f2876ba
-      internalID: -632547218646008683
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: character_idle_5
-      rect:
-        serializedVersion: 2
-        x: 165
-        y: 0
-        width: 33
-        height: 63
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 91d76cf7d7b9155489ccceedd73cb4ff
-      internalID: -7254382233607389928
+      spriteID: abf7cb30cc0164867b302a8ed6d28d99
+      internalID: 1505148208
       vertices: []
       indices: 
       edges: []
@@ -276,7 +172,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 9293142fa8c64a64ab43ebf9f9dbaa7a
+    spriteID: f2ec0422fd20d446cbb75a94ac45beb9
     internalID: 0
     vertices: []
     indices: 
@@ -286,12 +182,9 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      character_idle_0: -5240138286427330706
-      character_idle_1: 382507575425190280
-      character_idle_2: 5917505638279905623
-      character_idle_3: -7896677694271337862
-      character_idle_4: -632547218646008683
-      character_idle_5: -7254382233607389928
+      character_study_0: 6678738318212947462
+      character_study_1: 5079704781363229708
+      character_study_2: 1505148208
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
