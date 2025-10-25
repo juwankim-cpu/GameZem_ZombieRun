@@ -131,9 +131,21 @@ PrefabInstance:
       propertyPath: player
       value: 
       objectReference: {fileID: 7964634102058065953, guid: 97db64890f2d5d749ab665dda9805ed0, type: 3}
+    - target: {fileID: 2786112766358604229, guid: 069f6fb3c5938924390f7bede7da74c8, type: 3}
+      propertyPath: mapTilePrefabs.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2786112766358604229, guid: 069f6fb3c5938924390f7bede7da74c8, type: 3}
+      propertyPath: 'mapTilePrefabs.Array.data[0]'
+      value: 
+      objectReference: {fileID: 8106345612065079227, guid: 7f639a75d28b6d44992e7986c3b879cf, type: 3}
     - target: {fileID: 3608097458436090269, guid: 069f6fb3c5938924390f7bede7da74c8, type: 3}
       propertyPath: m_Name
       value: mapManager
+      objectReference: {fileID: 0}
+    - target: {fileID: 3608097458436090269, guid: 069f6fb3c5938924390f7bede7da74c8, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3828647320695782882, guid: 069f6fb3c5938924390f7bede7da74c8, type: 3}
       propertyPath: m_LocalPosition.x
@@ -197,7 +209,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!212 &169958045
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -345,6 +357,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1949771884}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &241309120 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7649618901966661949, guid: 97db64890f2d5d749ab665dda9805ed0, type: 3}
+  m_PrefabInstance: {fileID: 1443694768}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &316828627 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1522621385310064482, guid: d4f39781262e5bc42be83d126d6fc379, type: 3}
@@ -592,7 +609,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!212 &704214349
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -743,7 +760,7 @@ MonoBehaviour:
   enemySpawner: {fileID: 738286596}
   player:
     _usage: 0
-    _value: {fileID: 1117230215}
+    _value: {fileID: 241309120}
     _constant: {fileID: 0}
     _variable: {fileID: 0}
     _variableInstancer: {fileID: 0}
@@ -1026,7 +1043,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!212 &1210100194
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -1160,7 +1177,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!212 &1360223832
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -1294,7 +1311,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!212 &1402608935
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -1485,7 +1502,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!61 &1616514625
 BoxCollider2D:
   m_ObjectHideFlags: 0

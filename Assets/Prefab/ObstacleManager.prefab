@@ -44,7 +44,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba3f48a80dcd6804a8302cdbde4ac0db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  obstaclePrefabs: []
+  obstaclePrefabs:
+  - {fileID: 2889858801161342585, guid: c281ebadff523804d94b7093773e6665, type: 3}
   stageName: 
   minSpeed: 3
   maxSpeed: 7
