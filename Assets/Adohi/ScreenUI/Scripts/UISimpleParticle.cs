@@ -239,6 +239,7 @@ public class UISimpleParticle : MonoBehaviour
             sequence = sequence.Join(rectTransform.DOScale(endScale, scaleDuration).SetEase(scaleEase));
         }
 
+        Debug.Log($"targetPos: {targetPos}");
         // 이동 애니메이션
         sequence = sequence.Join(rectTransform.DOAnchorPos(targetPos, moveDuration).SetEase(moveEase));
 

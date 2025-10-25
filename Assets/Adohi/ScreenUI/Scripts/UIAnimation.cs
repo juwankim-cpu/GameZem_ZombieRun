@@ -7,74 +7,46 @@ using com.cyborgAssets.inspectorButtonPro;
 public class UIAnimation : MonoBehaviour
 {
     [Header("애니메이션 설정")]
-    [SerializeField] private AnimationType animationType = AnimationType.All;
     [SerializeField] private float duration = 0.5f;
     [SerializeField] private Ease easeType = Ease.OutCubic;
 
-    [Header("스케일 애니메이션")]
+    [Header("스케일")]
     [SerializeField] private bool useScale = true;
-    [SerializeField] private Vector3 scaleStart = Vector3.zero;
-    [SerializeField] private Vector3 scaleEnd = Vector3.one;
+    [SerializeField] private Vector3 scaleHidden = Vector3.zero;
+    [SerializeField] private Vector3 scaleVisible = Vector3.one;
 
-    [Header("포지션 애니메이션")]
+    [Header("포지션 (UI용 Anchored Position)")]
     [SerializeField] private bool usePosition = false;
-    [SerializeField] private bool useLocalPosition = true;
-    [SerializeField] private Vector3 positionStart = Vector3.zero;
-    [SerializeField] private Vector3 positionEnd = Vector3.zero;
+    [SerializeField] private Vector2 positionHidden = Vector2.zero;
+    [SerializeField] private Vector2 positionVisible = Vector2.zero;
 
-    [Header("회전 애니메이션")]
+    [Header("회전")]
     [SerializeField] private bool useRotation = false;
-    [SerializeField] private Vector3 rotationStart = Vector3.zero;
-    [SerializeField] private Vector3 rotationEnd = Vector3.zero;
+    [SerializeField] private Vector3 rotationHidden = Vector3.zero;
+    [SerializeField] private Vector3 rotationVisible = Vector3.zero;
 
-    [Header("페이드 애니메이션")]
+    [Header("페이드")]
     [SerializeField] private bool useFade = false;
-    [SerializeField] private float fadeStart = 0f;
-    [SerializeField] private float fadeEnd = 1f;
+    [SerializeField] private float fadeHidden = 0f;
+    [SerializeField] private float fadeVisible = 1f;
 
     [Header("시작 설정")]
     [SerializeField] private bool hideOnStart = true;
     [SerializeField] private bool showOnStart = false;
-    [SerializeField] private float startDelay = 0f;
-
-    [Header("애니메이션 모드")]
-    [SerializeField] private bool sequential = false; // true: 순차 실행, false: 동시 실행
-    [SerializeField] private float sequentialDelay = 0.1f;
-
-    [Header("루프 설정")]
-    [SerializeField] private bool loop = false;
-    [SerializeField] private LoopType loopType = LoopType.Restart;
-    [SerializeField] private int loopCount = -1; // -1 = 무한
 
     private RectTransform rectTransform;
     private CanvasGroup canvasGroup;
-    private Vector3 originalScale;
-    private Vector3 originalPosition;
-    private Vector3 originalRotation;
-    private bool isShowing = false;
     private Sequence currentSequence;
+    private bool isShowing = false;
 
-    // 이벤트 콜백
-    public event Action OnShowStarted;
+    // 이벤트
     public event Action OnShowCompleted;
-    public event Action OnHideStarted;
     public event Action OnHideCompleted;
 
-    public enum AnimationType
-    {
-        All,
-        Scale,
-        Position,
-        Rotation,
-        Fade,
-        Custom
-    }
-
-    private void Awake()
+    void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
 
-        // CanvasGroup이 없으면 추가
         if (useFade)
         {
             canvasGroup = GetComponent<CanvasGroup>();
@@ -83,357 +55,240 @@ public class UIAnimation : MonoBehaviour
                 canvasGroup = gameObject.AddComponent<CanvasGroup>();
             }
         }
-
-        // 원본 값 저장
-        originalScale = rectTransform.localScale;
-        originalPosition = useLocalPosition ? rectTransform.localPosition : rectTransform.position;
-        originalRotation = rectTransform.localEulerAngles;
     }
 
-    private async void Start()
+    void Start()
     {
-        // 시작 시 숨김 처리
         if (hideOnStart)
         {
-            SetHideStateImmediate();
+            // 비주얼 상태를 숨김으로 설정
+            SetVisualState(false);
+
+            if (!showOnStart)
+            {
+                // showOnStart가 false면 비활성화
+                gameObject.SetActive(false);
+                isShowing = false;
+            }
         }
 
-        // 시작 지연 후 자동 표시
         if (showOnStart)
         {
-            if (startDelay > 0)
-            {
-                await UniTask.Delay(TimeSpan.FromSeconds(startDelay), cancellationToken: this.GetCancellationTokenOnDestroy());
-            }
-            await Show();
+            ShowAsync().Forget();
         }
     }
 
-    private void OnDestroy()
+    void OnDestroy()
     {
-        // 진행 중인 애니메이션 정리
         currentSequence?.Kill();
     }
 
     /// <summary>
-    /// UI를 표시합니다
+    /// 표시 애니메이션
     /// </summary>
-    public async UniTask Show(Action onComplete = null)
+    public async UniTask Show()
     {
-        if (isShowing) return;
-
-        // 먼저 활성화하고 초기 상태로 설정
         gameObject.SetActive(true);
 
-        // 시작 상태를 즉시 설정 (애니메이션이 제대로 동작하도록)
-        SetStartStateForShow();
+        // 숨긴 상태로 설정 (active는 그대로 유지)
+        SetVisualState(false);
+
+        await PlayAnimation(true);
 
         isShowing = true;
-
-        OnShowStarted?.Invoke();
-
-        // 기존 애니메이션 중단
-        currentSequence?.Kill();
-
-        currentSequence = DOTween.Sequence();
-
-        if (sequential)
-        {
-            // 순차 실행
-            PlayAnimationsSequential(true);
-        }
-        else
-        {
-            // 동시 실행
-            PlayAnimationsParallel(true);
-        }
-
-        if (loop)
-        {
-            currentSequence = currentSequence.SetLoops(loopCount, loopType);
-        }
-
-        await currentSequence.AsyncWaitForCompletion().AsUniTask();
-
         OnShowCompleted?.Invoke();
-        onComplete?.Invoke();
     }
 
     /// <summary>
-    /// UI를 숨깁니다
+    /// 숨김 애니메이션
     /// </summary>
-    public async UniTask Hide(Action onComplete = null, bool deactivateOnComplete = true)
+    public async UniTask Hide(bool deactivate = true)
     {
-        if (!isShowing) return;
+        await PlayAnimation(false);
+
+        if (deactivate)
+        {
+            gameObject.SetActive(false);
+        }
 
         isShowing = false;
-
-        OnHideStarted?.Invoke();
-
-        // 기존 애니메이션 중단
-        currentSequence?.Kill();
-
-        currentSequence = DOTween.Sequence();
-
-        if (sequential)
-        {
-            // 순차 실행
-            PlayAnimationsSequential(false);
-        }
-        else
-        {
-            // 동시 실행
-            PlayAnimationsParallel(false);
-        }
-
-        await currentSequence.AsyncWaitForCompletion().AsUniTask();
-
-        if (deactivateOnComplete)
-        {
-            gameObject.SetActive(false);
-        }
-
         OnHideCompleted?.Invoke();
-        onComplete?.Invoke();
     }
 
     /// <summary>
-    /// 애니메이션을 동시에 재생
-    /// </summary>
-    private void PlayAnimationsParallel(bool show)
-    {
-        if (useScale || (animationType == AnimationType.All || animationType == AnimationType.Scale))
-        {
-            Vector3 targetScale = show ? scaleEnd : scaleStart;
-            currentSequence.Join(rectTransform.DOScale(targetScale, duration).SetEase(easeType));
-        }
-
-        if (usePosition || (animationType == AnimationType.All || animationType == AnimationType.Position))
-        {
-            Vector3 targetPosition = show ? positionEnd : positionStart;
-            if (useLocalPosition)
-            {
-                currentSequence.Join(rectTransform.DOLocalMove(targetPosition, duration).SetEase(easeType));
-            }
-            else
-            {
-                currentSequence.Join(rectTransform.DOMove(targetPosition, duration).SetEase(easeType));
-            }
-        }
-
-        if (useRotation || (animationType == AnimationType.All || animationType == AnimationType.Rotation))
-        {
-            Vector3 targetRotation = show ? rotationEnd : rotationStart;
-            currentSequence.Join(rectTransform.DOLocalRotate(targetRotation, duration, RotateMode.FastBeyond360).SetEase(easeType));
-        }
-
-        if (useFade || (animationType == AnimationType.All || animationType == AnimationType.Fade))
-        {
-            if (canvasGroup != null)
-            {
-                float targetAlpha = show ? fadeEnd : fadeStart;
-                currentSequence.Join(canvasGroup.DOFade(targetAlpha, duration).SetEase(easeType));
-            }
-        }
-    }
-
-    /// <summary>
-    /// 애니메이션을 순차적으로 재생
-    /// </summary>
-    private void PlayAnimationsSequential(bool show)
-    {
-        if (useScale || (animationType == AnimationType.All || animationType == AnimationType.Scale))
-        {
-            Vector3 targetScale = show ? scaleEnd : scaleStart;
-            currentSequence.Append(rectTransform.DOScale(targetScale, duration).SetEase(easeType));
-            if (sequentialDelay > 0)
-                currentSequence.AppendInterval(sequentialDelay);
-        }
-
-        if (usePosition || (animationType == AnimationType.All || animationType == AnimationType.Position))
-        {
-            Vector3 targetPosition = show ? positionEnd : positionStart;
-            if (useLocalPosition)
-            {
-                currentSequence.Append(rectTransform.DOLocalMove(targetPosition, duration).SetEase(easeType));
-            }
-            else
-            {
-                currentSequence.Append(rectTransform.DOMove(targetPosition, duration).SetEase(easeType));
-            }
-            if (sequentialDelay > 0)
-                currentSequence.AppendInterval(sequentialDelay);
-        }
-
-        if (useRotation || (animationType == AnimationType.All || animationType == AnimationType.Rotation))
-        {
-            Vector3 targetRotation = show ? rotationEnd : rotationStart;
-            currentSequence.Append(rectTransform.DOLocalRotate(targetRotation, duration, RotateMode.FastBeyond360).SetEase(easeType));
-            if (sequentialDelay > 0)
-                currentSequence.AppendInterval(sequentialDelay);
-        }
-
-        if (useFade || (animationType == AnimationType.All || animationType == AnimationType.Fade))
-        {
-            if (canvasGroup != null)
-            {
-                float targetAlpha = show ? fadeEnd : fadeStart;
-                currentSequence.Append(canvasGroup.DOFade(targetAlpha, duration).SetEase(easeType));
-            }
-        }
-    }
-
-    /// <summary>
-    /// Show 애니메이션 시작 전 초기 상태 설정
-    /// </summary>
-    private void SetStartStateForShow()
-    {
-        if (useScale) rectTransform.localScale = scaleStart;
-        if (usePosition)
-        {
-            if (useLocalPosition)
-                rectTransform.localPosition = positionStart;
-            else
-                rectTransform.position = positionStart;
-        }
-        if (useRotation) rectTransform.localEulerAngles = rotationStart;
-        if (useFade && canvasGroup != null) canvasGroup.alpha = fadeStart;
-    }
-
-    /// <summary>
-    /// 즉시 숨김 상태로 설정
-    /// </summary>
-    private void SetHideStateImmediate()
-    {
-        SetStartStateForShow();
-
-        if (hideOnStart && !showOnStart)
-        {
-            gameObject.SetActive(false);
-        }
-    }
-
-    /// <summary>
-    /// 즉시 표시 상태로 설정
-    /// </summary>
-    public void SetShowStateImmediate()
-    {
-        if (useScale) rectTransform.localScale = scaleEnd;
-        if (usePosition)
-        {
-            if (useLocalPosition)
-                rectTransform.localPosition = positionEnd;
-            else
-                rectTransform.position = positionEnd;
-        }
-        if (useRotation) rectTransform.localEulerAngles = rotationEnd;
-        if (useFade && canvasGroup != null) canvasGroup.alpha = fadeEnd;
-
-        gameObject.SetActive(true);
-        isShowing = true;
-    }
-
-    /// <summary>
-    /// 토글 (Show/Hide 전환)
+    /// 토글
     /// </summary>
     public async UniTask Toggle()
     {
         if (isShowing)
-        {
             await Hide();
-        }
         else
-        {
             await Show();
-        }
     }
 
     /// <summary>
-    /// 현재 애니메이션 중단
+    /// 애니메이션 재생
     /// </summary>
-    public void Stop()
+    private async UniTask PlayAnimation(bool show)
     {
         currentSequence?.Kill();
+        currentSequence = DOTween.Sequence();
+
+        // 스케일
+        if (useScale)
+        {
+            Vector3 targetScale = show ? scaleVisible : scaleHidden;
+            currentSequence = currentSequence.Join(rectTransform.DOScale(targetScale, duration).SetEase(easeType));
+        }
+
+        // 포지션
+        if (usePosition)
+        {
+            Vector2 targetPos = show ? positionVisible : positionHidden;
+            Debug.Log($"targetPos: {targetPos}");
+            currentSequence = currentSequence.Join(rectTransform.DOAnchorPos(targetPos, duration).SetEase(easeType));
+        }
+
+        // 회전
+        if (useRotation)
+        {
+            Vector3 targetRot = show ? rotationVisible : rotationHidden;
+            currentSequence = currentSequence.Join(rectTransform.DORotate(targetRot, duration).SetEase(easeType));
+        }
+
+        // 페이드
+        if (useFade && canvasGroup != null)
+        {
+            float targetAlpha = show ? fadeVisible : fadeHidden;
+            currentSequence = currentSequence.Join(canvasGroup.DOFade(targetAlpha, duration).SetEase(easeType));
+        }
+
+        await currentSequence.AsyncWaitForCompletion().AsUniTask();
     }
 
     /// <summary>
-    /// 원본 값으로 리셋
+    /// 비주얼 상태만 변경 (Active는 변경 안 함)
     /// </summary>
-    public void ResetToOriginal()
+    private void SetVisualState(bool visible)
     {
-        rectTransform.localScale = originalScale;
-        if (useLocalPosition)
-            rectTransform.localPosition = originalPosition;
-        else
-            rectTransform.position = originalPosition;
-        rectTransform.localEulerAngles = originalRotation;
-        if (canvasGroup != null) canvasGroup.alpha = 1f;
+        if (useScale)
+            rectTransform.localScale = visible ? scaleVisible : scaleHidden;
+
+        if (usePosition)
+            rectTransform.anchoredPosition = visible ? positionVisible : positionHidden;
+
+        if (useRotation)
+            rectTransform.localEulerAngles = visible ? rotationVisible : rotationHidden;
+
+        if (useFade && canvasGroup != null)
+            canvasGroup.alpha = visible ? fadeVisible : fadeHidden;
     }
+
+    /// <summary>
+    /// 즉시 상태 변경 (애니메이션 없이)
+    /// </summary>
+    public void SetStateImmediate(bool visible)
+    {
+        SetVisualState(visible);
+        gameObject.SetActive(visible);
+        isShowing = visible;
+    }
+
+    /// <summary>
+    /// 현재 상태를 Hidden으로 캡처
+    /// </summary>
+    public void CaptureCurrentAsHidden()
+    {
+        if (useScale) scaleHidden = rectTransform.localScale;
+        if (usePosition) positionHidden = rectTransform.anchoredPosition;
+        if (useRotation) rotationHidden = rectTransform.localEulerAngles;
+        if (useFade && canvasGroup != null) fadeHidden = canvasGroup.alpha;
+
+        Debug.Log($"[캡처] Hidden 상태 저장 - Scale:{scaleHidden}, Pos:{positionHidden}");
+    }
+
+    /// <summary>
+    /// 현재 상태를 Visible로 캡처
+    /// </summary>
+    public void CaptureCurrentAsVisible()
+    {
+        if (useScale) scaleVisible = rectTransform.localScale;
+        if (usePosition) positionVisible = rectTransform.anchoredPosition;
+        if (useRotation) rotationVisible = rectTransform.localEulerAngles;
+        if (useFade && canvasGroup != null) fadeVisible = canvasGroup.alpha;
+
+        Debug.Log($"[캡처] Visible 상태 저장 - Scale:{scaleVisible}, Pos:{positionVisible}");
+    }
+
+    // Async 래퍼
+    private async UniTaskVoid ShowAsync() => await Show();
+    private async UniTaskVoid HideAsync() => await Hide();
 
     // 프로퍼티
     public bool IsShowing => isShowing;
-    public float Duration => duration;
 
-    // ========== 테스트 버튼들 (Inspector에서 사용) ==========
+    // ========== 테스트 버튼 ==========
 
     [ProButton]
     public async void TestShow()
     {
         await Show();
+        Debug.Log("Show 완료");
     }
 
     [ProButton]
     public async void TestHide()
     {
         await Hide();
+        Debug.Log("Hide 완료");
     }
 
     [ProButton]
     public async void TestToggle()
     {
         await Toggle();
+        Debug.Log($"Toggle 완료 - IsShowing: {isShowing}");
     }
 
     [ProButton]
     public void TestShowImmediate()
     {
-        SetShowStateImmediate();
+        SetStateImmediate(true);
+        Debug.Log("즉시 표시");
     }
 
     [ProButton]
     public void TestHideImmediate()
     {
-        SetHideStateImmediate();
+        SetStateImmediate(false);
+        Debug.Log("즉시 숨김");
     }
 
     [ProButton]
-    public void TestResetToOriginal()
+    public void TestCaptureAsHidden()
     {
-        ResetToOriginal();
+        CaptureCurrentAsHidden();
     }
 
     [ProButton]
-    public void TestStop()
+    public void TestCaptureAsVisible()
     {
-        Stop();
-        Debug.Log("애니메이션 중단됨");
+        CaptureCurrentAsVisible();
     }
 
     [ProButton]
-    public void TestDeactivate()
+    public void TestPrintState()
     {
-        gameObject.SetActive(false);
-        isShowing = false;
-        Debug.Log("오브젝트 비활성화됨 (이제 TestShow로 다시 활성화 테스트 가능)");
-    }
-
-    [ProButton]
-    public async void TestShowFromInactive()
-    {
-        gameObject.SetActive(false);
-        isShowing = false;
-        await UniTask.Delay(100); // 잠시 대기
-        Debug.Log("비활성화 상태에서 Show 호출 테스트 시작");
-        await Show();
+        Debug.Log($"=== UIAnimation 상태 ===");
+        Debug.Log($"IsShowing: {isShowing}");
+        Debug.Log($"Active: {gameObject.activeSelf}");
+        Debug.Log($"Scale: {rectTransform.localScale}");
+        Debug.Log($"Anchored Pos: {rectTransform.anchoredPosition}");
+        Debug.Log($"Rotation: {rectTransform.localEulerAngles}");
+        if (canvasGroup != null)
+            Debug.Log($"Alpha: {canvasGroup.alpha}");
+        Debug.Log($"--- 설정 ---");
+        Debug.Log($"Hidden - Scale:{scaleHidden}, Pos:{positionHidden}");
+        Debug.Log($"Visible - Scale:{scaleVisible}, Pos:{positionVisible}");
     }
 }

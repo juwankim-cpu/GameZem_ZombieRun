@@ -7,7 +7,8 @@ namespace ZombieRun.Adohi.Titles
 {
     public class TitleMover : MonoBehaviour
     {
-        public UIAnimation uiAnimation;
+        public UIAnimation titleAnimation;
+        public UIAnimation spaceKeyAnimation;
         public GameObject spaceKey;
 
         public float startDelay = 5f;
@@ -17,13 +18,21 @@ namespace ZombieRun.Adohi.Titles
             spaceKey.SetActive(false);
             await UniTask.Delay(TimeSpan.FromSeconds(startDelay));
             spaceKey.SetActive(true);
-            uiAnimation.Show().Forget();
+            titleAnimation.Show().Forget();
+            spaceKeyAnimation.Show().Forget();
         }
 
         [ProButton]
         public void End()
         {
-            uiAnimation.Hide().Forget();
+            titleAnimation.Hide().Forget();
+            spaceKeyAnimation.Hide().Forget();
+
+        }
+
+        public async UniTask EndAsync()
+        {
+            await UniTask.WhenAll(titleAnimation.Hide(), spaceKeyAnimation.Hide());
             spaceKey.SetActive(false);
         }
     }

@@ -12,6 +12,7 @@ public class StatusBar : MonoBehaviour
     [Header("값 설정")]
     [SerializeField] private float maxValue = 100f;
     [SerializeField] private FloatReference currentValue;
+    [SerializeField] private FloatVariable currentValueVariable; // 이벤트 구독용
     [SerializeField] private bool useAtomValue = true; // Atom 값 사용 여부
     [SerializeField] private float manualValue = 100f; // 수동 값 (Atom 미사용 시)
 
@@ -52,20 +53,45 @@ public class StatusBar : MonoBehaviour
         UpdateBar(true); // 즉시 업데이트
     }
 
-    void Update()
+    void OnEnable()
     {
-        float newTargetValue = GetCurrentValue();
-
-        // 값이 변경되었는지 확인
-        if (!Mathf.Approximately(newTargetValue, targetValue))
+        // Atom 값 변경 이벤트 구독
+        if (useAtomValue && currentValueVariable != null)
         {
-            targetValue = newTargetValue;
-            UpdateBar(false);
+            currentValueVariable.Changed.Register(OnAtomValueChanged);
 
             if (showDebugInfo)
             {
-                Debug.Log($"StatusBar: 값 변경 {displayedValue:F1} -> {targetValue:F1} (비율: {GetRatio():P0})");
+                Debug.Log("StatusBar: Atom 이벤트 구독 완료");
             }
+        }
+    }
+
+    void OnDisable()
+    {
+        // Atom 값 변경 이벤트 해제
+        if (useAtomValue && currentValueVariable != null)
+        {
+            currentValueVariable.Changed.Unregister(OnAtomValueChanged);
+
+            if (showDebugInfo)
+            {
+                Debug.Log("StatusBar: Atom 이벤트 구독 해제");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Atom 값 변경 시 호출되는 콜백
+    /// </summary>
+    void OnAtomValueChanged(float newValue)
+    {
+        targetValue = newValue;
+        UpdateBar(false);
+
+        if (showDebugInfo)
+        {
+            Debug.Log($"StatusBar: 값 변경 {displayedValue:F1} -> {targetValue:F1} (비율: {GetRatio():P0})");
         }
     }
 
@@ -313,6 +339,13 @@ public class StatusBar : MonoBehaviour
     }
 
     [ProButton]
+    public void TestToggleDebugInfo()
+    {
+        showDebugInfo = !showDebugInfo;
+        Debug.Log($"디버그 정보: {(showDebugInfo ? "ON" : "OFF")}");
+    }
+
+    [ProButton]
     public void TestPrintStatus()
     {
         Debug.Log($"=== StatusBar 상태 ===");
@@ -322,6 +355,7 @@ public class StatusBar : MonoBehaviour
         Debug.Log($"색상: {fillImage.color}");
         Debug.Log($"Empty Color: {emptyColor}, Full Color: {fullColor}");
         Debug.Log($"Atom 사용: {useAtomValue}");
+        Debug.Log($"Atom Variable 연결: {(currentValueVariable != null ? "O" : "X")}");
         Debug.Log($"색상 그라디언트: {useColorGradient}, 커스텀: {useCustomGradient}");
         Debug.Log($"애니메이션: {animationDuration}초, Lazy: {useLazyAnimation}");
     }
