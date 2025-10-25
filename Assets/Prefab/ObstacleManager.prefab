@@ -46,9 +46,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   obstaclePrefabs:
   - {fileID: 2889858801161342585, guid: c281ebadff523804d94b7093773e6665, type: 3}
-  stageName: 
+  - {fileID: 2953157865635543843, guid: abb5abe4565cb5940bd9260b69775fd4, type: 3}
+  - {fileID: 2953157865635543843, guid: 4832b202f3f9a8f46aa901d577242730, type: 3}
+  goalDistance: {fileID: 587498840154029887, guid: b289269343c5d2c4682a5dd045835d85, type: 3}
+  movingDistance: {fileID: 7278122977318317483, guid: b289269343c5d2c4682a5dd045835d85, type: 3}
+  goals: []
   minSpeed: 3
   maxSpeed: 7
   obstacleSpawnInterval: 2
   minYPosition: -2
   maxYPosition: 2
+  spawnXOffset: 10
