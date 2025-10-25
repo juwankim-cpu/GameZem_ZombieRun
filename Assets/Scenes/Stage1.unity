@@ -721,7 +721,7 @@ MonoBehaviour:
   followY: 0
   followZ: 1
   enableInfiniteMap: 1
-  mapManager: {fileID: 1623066659}
+  mapManager: {fileID: 0}
   showDebugInfo: 1
   drawPlayerPosition: 1
   offset: {x: 0, y: 0, z: 0}
@@ -815,8 +815,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba3f48a80dcd6804a8302cdbde4ac0db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  obstaclePrefabs:
-  - {fileID: 379535690}
+  obstaclePrefabs: []
   stageName: 
   minSpeed: 3
   maxSpeed: 7
@@ -902,7 +901,7 @@ SceneRoots:
   - {fileID: 1388079240}
   - {fileID: 1229322729}
   - {fileID: 568981724}
-  - {fileID: 1623066660}
+  - {fileID: 8573671162209581274}
   - {fileID: 1927759877}
   - {fileID: 379535692}
   - {fileID: 813035900893166334}

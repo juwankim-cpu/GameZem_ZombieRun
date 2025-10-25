@@ -9,6 +9,13 @@
       },
       "hash": "38fecf55e4fd94ccfe58a92ed8ad1a529ba1694e"
     },
+    "com.unity-atoms.unity-atoms": {
+      "version": "https://github.com/unity-atoms/unity-atoms.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "2e11570e7401177fa8e44f97ea08d939407b9ebd"
+    },
     "com.unity.2d.animation": {
       "version": "10.2.1",
       "depth": 1,
