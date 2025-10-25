@@ -17,6 +17,10 @@ public class ObstacleManager : MonoBehaviour
     public float minYPosition = -2.0f; 
     public float maxYPosition = 2.0f;
 
+    private Transform playerTransform;
+
+    public float spawnXOffset = 10.0f;
+
     void Awake()
     {
         Instance = this;
@@ -27,6 +31,15 @@ public class ObstacleManager : MonoBehaviour
     void Start()
     {
         stageName = SceneManager.GetActiveScene().name;
+        CharactorMove player = FindObjectOfType<CharactorMove>();
+        if (player != null)
+        {
+            playerTransform = player.transform;
+        }
+        else
+        {
+            Debug.LogError("CharactorMove 컴포넌트를 가진 플레이어 오브젝트를 찾을 수 없습니다! 장애물 생성 위치가 고정됩니다.");
+        }
         GameObject.Find("Obstacle").SetActive(false);
         StartCoroutine(SpawnObstaclesCoroutine());
     }
@@ -70,20 +83,35 @@ public class ObstacleManager : MonoBehaviour
     {
         if (prefab == null) return;
 
-        // 1. ⭐️ Y축 위치와 속도를 랜덤으로 결정합니다.
+        // 1. Y축 위치와 속도를 랜덤으로 결정합니다.
         float randomY = Random.Range(minYPosition, maxYPosition);
         float randomSpeed = Random.Range(minSpeed, maxSpeed);
+
+        // ⭐️ 변경: 장애물이 생성될 X축 위치를 캐릭터 위치에 기반하여 계산
+        float spawnX;
+        if (playerTransform != null)
+        {
+            // 캐릭터의 현재 X 위치 + 오프셋 (캐릭터가 이동해도 X축 위치를 따라감)
+            spawnX = playerTransform.position.x + spawnXOffset; 
+        }
+        else
+        {
+            // 캐릭터를 찾지 못했으면 이전의 고정된 X 위치를 사용
+            spawnX = 8.86f; 
+            Debug.LogWarning("플레이어 Transform을 찾을 수 없어 X=8.86f에 생성합니다.");
+        }
+
 
         // 2. 장애물 생성
         var obstacle = Instantiate(prefab);
 
-        // 3. ⭐️ 초기 위치 설정: (8.86, randomY, 0)
-        obstacle.transform.position = new Vector3(8.86f, randomY, 0f); 
+        // 3. ⭐️ 초기 위치 설정: (spawnX, randomY, 0)
+        obstacle.transform.position = new Vector3(spawnX, randomY, 0f); 
 
         // 4. 이동 및 파괴를 위한 컴포넌트 추가
         ObstacleMover mover = obstacle.AddComponent<ObstacleMover>();
         
-        // 5. ⭐️ 랜덤으로 결정된 속도를 전달합니다.
+        // 5. 랜덤으로 결정된 속도를 전달합니다.
         mover.moveSpeed = randomSpeed;
     }
 

@@ -4,6 +4,11 @@ public class CharactorMove : MonoBehaviour
 {
     [Header("이동 설정")]
     public float moveSpeed = 0.15f; // 이동 속도
+
+    [Header("Y축 제한 설정")]
+    // Y축 최소 및 최대 제한 값 추가
+    public float yMinLimit = -10f; 
+    public float yMaxLimit = 0.5f;
     
     [Header("카메라 경계 설정")]
     public bool enableCameraBounds = true; // 카메라 경계 제한 활성화
@@ -47,6 +52,9 @@ public class CharactorMove : MonoBehaviour
         if (movement != Vector3.zero)
         {
             Vector3 newPosition = transform.position + movement * moveSpeed;
+
+            // Y축 이동 제한 적용 (최소 -0.5, 최대 0.5)
+            newPosition.y = Mathf.Clamp(newPosition.y, yMinLimit, yMaxLimit);
             
             // // Z축 카메라 경계 제한 적용
             // if (enableCameraBounds)
