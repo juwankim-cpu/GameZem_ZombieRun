@@ -1,13 +1,17 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections;
+using UnityEngine.UI;
 public class ObstacleManager : MonoBehaviour
 {
     public static ObstacleManager Instance;
     public GameObject[] obstaclePrefabs;
     
-    public string stageName;
+    
 
+    public MovingDistance movingDistance;
+   
+    
     public float minSpeed = 3.0f; // 최소 속도
     public float maxSpeed = 7.0f; // 최대 속도
     
@@ -30,7 +34,27 @@ public class ObstacleManager : MonoBehaviour
     }
     void Start()
     {
-        stageName = SceneManager.GetActiveScene().name;
+        // if (goalDistance != null)
+        // {
+        //     // 예: "123 미터" -> ["123", "미터"]
+        //     goals = goalDistance.text.Split(' ');
+        //     // goals[0]에 "123"이 들어갑니다.
+            
+        //     // 디버그 확인 (선택 사항)
+        //     if (goals.Length > 0)
+        //     {
+        //         Debug.Log($"목표 거리 텍스트에서 추출된 숫자: {goals[0]}");
+        //     }
+        // }
+        // else
+        // {
+        //     Debug.LogError("goalDistance 텍스트 컴포넌트가 할당되지 않았습니다.");
+        //     // 오류 방지를 위해 임시 값 설정 (선택 사항)
+        //     goals = new string[] { "0", "미터" }; 
+        // }
+        
+        
+        
         CharactorMove player = FindObjectOfType<CharactorMove>();
         if (player != null)
         {
@@ -58,28 +82,44 @@ public class ObstacleManager : MonoBehaviour
                 yield return null; // 한 프레임 대기 (CPU 부하 방지)
                 continue; // 아래 생성 로직을 건너뛰고 루프 처음으로 돌아가 다시 sitDown 상태를 확인합니다.
             }
-            // ⭐️ 먼저 정해진 시간 간격만큼 대기합니다.
-            yield return new WaitForSeconds(obstacleSpawnInterval); 
+            // // ⭐️ 먼저 정해진 시간 간격만큼 대기합니다.
+            // yield return new WaitForSeconds(obstacleSpawnInterval); 
+            // int currentGoal = 0;
 
-            // ⭐️ 현재 스테이지에 따라 장애물을 생성합니다.
-            if (stageName == "Stage1")
+            // // ⭐️ goals[0]를 안전하게 숫자로 변환합니다.
+            // // 변환에 성공하면 currentGoal에 값이 저장되고, 실패하면 currentGoal은 0을 유지합니다.
+            // if (goals != null && goals.Length > 0 && int.TryParse(goals[0], out currentGoal))
+            // {
+            //     // 변환 성공
+            //     // Debug.Log($"현재 목표 거리: {currentGoal}"); // 디버그용
+            // }
+            // else
+            // {
+            //     // 변환 실패 (예: goals[0]이 null, 빈 문자열 또는 "미터"인 경우)
+            //     Debug.LogWarning($"목표 거리 문자열 '{goals?[0]}'을(를) 숫자로 변환할 수 없습니다. 현재 스테이지 계산에 기본값 0을 사용합니다.");
+            //     currentGoal = 0;
+            // }
+
+            // ⭐️ currentGoal 변수를 사용하여 스테이지를 판단합니다.
+            if (movingDistance.currentDistance < 150 )
             {
                 // Stage1에서 2개의 장애물 생성
                 SpawnObstacle(obstaclePrefabs[0]);
                 
             }
-            else if (stageName == "Stage2")
+             if (150 <= movingDistance.currentDistance && movingDistance.currentDistance < 300)
             {
                 // Stage2에서 2개의 장애물 생성
-                SpawnObstacle(obstaclePrefabs[2]);
-                SpawnObstacle(obstaclePrefabs[3]);
+                SpawnObstacle(obstaclePrefabs[1]);
+                
             }
-            else if (stageName == "Stage3")
+            if (300 <= movingDistance.currentDistance && movingDistance.currentDistance < 450)
             {
                 // Stage3에서 1개의 장애물 생성
-                SpawnObstacle(obstaclePrefabs[obstaclePrefabs.Length - 1]);
+                SpawnObstacle(obstaclePrefabs[2]);
             }
-            // 스테이지가 추가되면 여기에 else if 블록을 추가합니다.
+            if (movingDistance.currentDistance >= 450)
+                SpawnObstacle(obstaclePrefabs[obstaclePrefabs.Length -1]);
         }
     }
 
