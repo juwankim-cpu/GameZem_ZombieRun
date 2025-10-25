@@ -44,7 +44,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a1c34646e0c0a01469cef18ff9675c16, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mapTilePrefabs: []
+  mapTilePrefabs:
+  - {fileID: 8106345612065079227, guid: 583cf8e0ecd894943aa0ba7ed74cc539, type: 3}
+  - {fileID: 8106345612065079227, guid: 74f813e3c6256814eab2f79ebb534f6b, type: 3}
+  - {fileID: 8106345612065079227, guid: 7d6d0b49f0f344b4a8ef2655b42a792d, type: 3}
   tileSize: {x: 10, y: 10}
   renderDistance: 1
   mapLayerName: Map
