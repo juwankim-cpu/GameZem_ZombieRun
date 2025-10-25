@@ -43,6 +43,7 @@ namespace ZombieRun.Adohi.GameSystem
         public float timeFromStart;
 
         [Header("Scene Transition")]
+        private bool isSceneTransition = false;
         public SceneManagerWithTransition sceneManagerWithTransition;
 
         void Awake()
@@ -129,6 +130,9 @@ namespace ZombieRun.Adohi.GameSystem
         [ProButton]
         public void MoveNextStage()
         {
+            if (isSceneTransition) return;
+            isSceneTransition = true;
+
             Debug.Log($"스테이지 {currentStage.Value} 클리어! 다음 스테이지로 이동");
             //씬 트랜지션
             //씬 이동
