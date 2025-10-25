@@ -153,7 +153,11 @@ MonoBehaviour:
   maxDistance: 7.3
   leftAngle: -15
   rightAngle: 15
-  sightColor: {r: 1, g: 0.9942303, b: 0.60062885, a: 0.41960785}
+  sightColor: {r: 0.98057336, g: 1, b: 0.63207537, a: 0.35686275}
+  blendMode: 1
+  useEmission: 0
+  emissionColor: {r: 1, g: 0, b: 0, a: 1}
+  emissionIntensity: 0
   obstacleLayer:
     serializedVersion: 2
     m_Bits: 2147483648
@@ -267,7 +271,11 @@ MonoBehaviour:
   maxDistance: 7.3
   leftAngle: -15
   rightAngle: 15
-  sightColor: {r: 1, g: 0.9942303, b: 0.60062885, a: 0.41960785}
+  sightColor: {r: 0.98057336, g: 1, b: 0.63207537, a: 0.35686275}
+  blendMode: 1
+  useEmission: 0
+  emissionColor: {r: 1, g: 0, b: 0, a: 1}
+  emissionIntensity: 0
   obstacleLayer:
     serializedVersion: 2
     m_Bits: 2147483648

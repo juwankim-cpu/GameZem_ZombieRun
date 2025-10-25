@@ -19,9 +19,22 @@ namespace ZombieRun.Adohi
         [SerializeField] private float leftAngle = 0f;
         [SerializeField] private float rightAngle = 0f;
         [SerializeField] private Color sightColor = new Color(1f, 0f, 0f, 0.3f);
+
+        [Header("블렌드 모드")]
+        [SerializeField] private BlendMode blendMode = BlendMode.Alpha;
+
+        [Header("Emission 설정")]
         [SerializeField] private bool useEmission = true;
         [SerializeField] private Color emissionColor = new Color(1f, 0f, 0f, 1f);
-        [SerializeField] [Range(0f, 10f)] private float emissionIntensity = 2f;
+        [SerializeField][Range(0f, 10f)] private float emissionIntensity = 2f;
+
+        public enum BlendMode
+        {
+            Alpha,      // 기본 알파 블렌딩
+            Additive,   // 가산 블렌딩
+            Screen,     // 스크린 블렌딩 (포토샵 Screen)
+            Multiply    // 곱셈 블렌딩
+        }
 
         [Header("레이캐스트 설정")]
         [SerializeField] private LayerMask obstacleLayer;
@@ -57,8 +70,30 @@ namespace ZombieRun.Adohi
             mesh = new Mesh();
             meshFilter.mesh = mesh;
 
-            meshRenderer.material = new Material(Shader.Find("Sprites/Default"));
-            meshRenderer.material.color = sightColor;
+            // 블렌드 모드에 따라 적절한 셰이더 선택
+            Shader shader = GetShaderForBlendMode(blendMode);
+
+            meshRenderer.material = new Material(shader);
+
+            // 블렌드 모드에 따라 색상 처리
+            Color finalColor = sightColor;
+            if (blendMode == BlendMode.Screen || blendMode == BlendMode.Additive)
+            {
+                // Screen/Additive 모드는 밝기 기반이므로 알파가 낮아도 효과적
+                // 하지만 색상 자체는 그대로 사용 (사용자가 조정 가능하도록)
+            }
+            meshRenderer.material.color = finalColor;
+
+            // 블렌드 모드 설정 (추가 설정)
+            ApplyBlendMode(meshRenderer.material, blendMode);
+
+            // Emission 설정
+            if (useEmission)
+            {
+                meshRenderer.material.EnableKeyword("_EMISSION");
+                Color finalEmissionColor = emissionColor * emissionIntensity;
+                meshRenderer.material.SetColor("_EmissionColor", finalEmissionColor);
+            }
 
             // 텍스처 적용
             if (sightTexture != null)
@@ -129,6 +164,109 @@ namespace ZombieRun.Adohi
                 await DoSight(duration, ease);
             }
         }
+
+        // Emission 강도 설정
+        public void SetEmissionIntensity(float intensity)
+        {
+            emissionIntensity = intensity;
+            if (meshRenderer != null && meshRenderer.material != null && useEmission)
+            {
+                Color finalEmissionColor = emissionColor * emissionIntensity;
+                meshRenderer.material.SetColor("_EmissionColor", finalEmissionColor);
+            }
+        }
+
+        // Emission 컬러 설정
+        public void SetEmissionColor(Color color)
+        {
+            emissionColor = color;
+            if (meshRenderer != null && meshRenderer.material != null && useEmission)
+            {
+                Color finalEmissionColor = emissionColor * emissionIntensity;
+                meshRenderer.material.SetColor("_EmissionColor", finalEmissionColor);
+            }
+        }
+
+        // 블렌드 모드에 적합한 셰이더 선택
+        private Shader GetShaderForBlendMode(BlendMode mode)
+        {
+            // 커스텀 블렌드 셰이더 사용 (블렌드 모드 파라미터 지원)
+            Shader shader = Shader.Find("Custom/BlendModeShader");
+
+            // 폴백: Sprites/Default
+            if (shader == null)
+            {
+                shader = Shader.Find("Sprites/Default");
+                Debug.LogWarning("Custom/BlendModeShader를 찾을 수 없습니다. Sprites/Default를 사용합니다.");
+            }
+
+            return shader;
+        }
+
+        // 블렌드 모드 적용
+        private void ApplyBlendMode(Material material, BlendMode mode)
+        {
+            switch (mode)
+            {
+                case BlendMode.Alpha:
+                    // 표준 알파 블렌딩: SrcAlpha OneMinusSrcAlpha
+                    material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                    material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                    break;
+
+                case BlendMode.Additive:
+                    // 가산 블렌딩: SrcAlpha One
+                    material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                    material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.One);
+                    break;
+
+                case BlendMode.Screen:
+                    // 스크린 블렌딩 (포토샵 Screen): One OneMinusSrcColor
+                    material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
+                    material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcColor);
+                    break;
+
+                case BlendMode.Multiply:
+                    // 곱셈 블렌딩: DstColor Zero
+                    material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.DstColor);
+                    material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
+                    break;
+            }
+
+            material.SetInt("_ZWrite", 0);
+            material.renderQueue = 3000;
+
+            Debug.Log($"블렌드 모드 적용: {mode}, 셰이더: {material.shader.name}, SrcBlend: {material.GetInt("_SrcBlend")}, DstBlend: {material.GetInt("_DstBlend")}");
+        }
+
+        // 블렌드 모드 변경 (런타임)
+        public void SetBlendMode(BlendMode mode)
+        {
+            blendMode = mode;
+            if (meshRenderer != null)
+            {
+                // 셰이더를 새로 선택하고 머티리얼 재생성
+                Shader shader = GetShaderForBlendMode(mode);
+                Color prevColor = meshRenderer.material.color;
+                Texture prevTexture = meshRenderer.material.mainTexture;
+
+                meshRenderer.material = new Material(shader);
+                meshRenderer.material.color = prevColor;
+                if (prevTexture != null)
+                    meshRenderer.material.mainTexture = prevTexture;
+
+                ApplyBlendMode(meshRenderer.material, mode);
+
+                // Emission 재적용
+                if (useEmission)
+                {
+                    meshRenderer.material.EnableKeyword("_EMISSION");
+                    Color finalEmissionColor = emissionColor * emissionIntensity;
+                    meshRenderer.material.SetColor("_EmissionColor", finalEmissionColor);
+                }
+            }
+        }
+
         void CreateRectangle()
         {
             mesh.Clear();
