@@ -25,7 +25,7 @@ Transform:
   m_GameObject: {fileID: 3393044770183430301}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.293, z: 0}
+  m_LocalPosition: {x: -7.84, y: -25.66, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -60,8 +60,8 @@ Transform:
   m_GameObject: {fileID: 7649618901966661949}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.281, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: -15.803, y: -29.93, z: 0}
+  m_LocalScale: {x: 0.059267774, y: 0.04987198, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8060214632098411809}
@@ -109,7 +109,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1234541677
-  m_SortingLayer: 2
+  m_SortingLayer: 1
   m_SortingOrder: 0
   m_Sprite: {fileID: -5240138286427330706, guid: 4f8f1238296e4bc488d96433e3e4e847, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -194,5 +194,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 0.15
+  yMinLimit: -10
+  yMaxLimit: 0.5
   enableCameraBounds: 1
   yOffset: 0.5
