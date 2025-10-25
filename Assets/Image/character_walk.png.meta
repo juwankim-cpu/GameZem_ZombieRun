@@ -117,6 +117,32 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
@@ -124,9 +150,9 @@ TextureImporter:
       name: character_walk_0
       rect:
         serializedVersion: 2
-        x: 0
+        x: 2
         y: 0
-        width: 39
+        width: 36
         height: 63
       alignment: 0
       pivot: {x: 0, y: 0}
@@ -146,9 +172,9 @@ TextureImporter:
       name: character_walk_1
       rect:
         serializedVersion: 2
-        x: 39
+        x: 40
         y: 0
-        width: 39
+        width: 38
         height: 63
       alignment: 0
       pivot: {x: 0, y: 0}
@@ -171,7 +197,7 @@ TextureImporter:
         x: 78
         y: 0
         width: 39
-        height: 63
+        height: 62
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -193,7 +219,7 @@ TextureImporter:
         x: 117
         y: 0
         width: 39
-        height: 63
+        height: 61
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -212,10 +238,10 @@ TextureImporter:
       name: character_walk_4
       rect:
         serializedVersion: 2
-        x: 156
-        y: 0
-        width: 39
-        height: 63
+        x: 158
+        y: 1
+        width: 37
+        height: 62
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -234,10 +260,10 @@ TextureImporter:
       name: character_walk_5
       rect:
         serializedVersion: 2
-        x: 195
-        y: 0
-        width: 39
-        height: 63
+        x: 197
+        y: 1
+        width: 36
+        height: 62
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -256,10 +282,10 @@ TextureImporter:
       name: character_walk_6
       rect:
         serializedVersion: 2
-        x: 234
+        x: 236
         y: 0
-        width: 39
-        height: 63
+        width: 36
+        height: 62
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -278,10 +304,10 @@ TextureImporter:
       name: character_walk_7
       rect:
         serializedVersion: 2
-        x: 273
+        x: 275
         y: 0
-        width: 39
-        height: 63
+        width: 36
+        height: 61
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
