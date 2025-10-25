@@ -6,6 +6,11 @@ TagManager:
   tags:
   - Map
   - Obstacle
+  - Truck
+  - Hand
+  - Chair
+  - HP
+  - Buff
   layers:
   - Default
   - TransparentFX

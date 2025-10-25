@@ -18,7 +18,7 @@ public class CharactorMove : MonoBehaviour
     private Camera mainCamera;
     private float cameraTopBound;
     private float cameraBottomBound;
-    
+    HPManager hpManager;
     void Init()
     {
         p_Animator = GetComponent<Animator>();
@@ -90,26 +90,67 @@ public class CharactorMove : MonoBehaviour
         }
 
         // 앉기 기능
-        if (Input.GetKeyDown(KeyCode.Z)) // 키를 누르는 순간
+        if (Input.GetKey(KeyCode.Z)) // 키를 누르는 순간
         {    GameStatus.sitDown = !GameStatus.sitDown;
              //앉기 애니메이션 재생
+             p_Animator.SetBool("Sit", true);
         }
-
-        if (Input.GetKeyDown(KeyCode.X))
+        else
         {
-            //애교 Status값 갱신
-            //애교 애니메이션 재생
+            
+            p_Animator.SetBool("Sit", false);
         }
+        
+    }
 
-        if (Input.GetKeyDown(KeyCode.C))
+    private void OnCollisionEnter(Collision collision)
+    {
+        if(collision.collider.gameObject.CompareTag("Truck"))
+        {
+            GameStatus.hitted = !GameStatus.hitted;
+            p_Animator.SetBool("Hit", true);
+        }
+        else if (collision.collider.gameObject.CompareTag("Hand"))
+        {
+            
+            if (Input.GetKeyDown(KeyCode.X))
+            {
+                //애교 Status값 갱신
+                GameStatus.hearted = !GameStatus.hearted;
+                //애교 애니메이션 재생
+                p_Animator.SetBool("Heart", true);
+            }
+            else 
+            {
+                GameStatus.hearted = false;
+                p_Animator.SetBool("Heart", false);
+                GameStatus.hitted = !GameStatus.hitted;
+                p_Animator.SetBool("Hit", true);
+                hpManager.currentHP -= 5f;
+                
+            }
+            
+        }
+        else if (collision.collider.gameObject.CompareTag("Chair"))
+        {
+            if (Input.GetKeyDown(KeyCode.C))
         {
             //공부 Status값 갱신
+            GameStatus.study = !GameStatus.study;
             //공부 애니메이션 재생
+            p_Animator.SetBool("Study", true);
         }
+        else
+        {
+            GameStatus.study = false;
+            p_Animator.SetBool("Study", false);
+            GameStatus.hitted = !GameStatus.hitted;
+            p_Animator.SetBool("Hit", true);
 
-    
-        
-       
+            hpManager.currentHP -= 5f;
+
+        }
+        }
     }
     
     private void CalculateCameraBounds()
