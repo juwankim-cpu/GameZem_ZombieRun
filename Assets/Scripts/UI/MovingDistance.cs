@@ -6,7 +6,7 @@ public class MovingDistance : MonoBehaviour
 {
     [Header("UI 설정")]
     public Text distanceText; // 거리를 표시할 텍스트 컴포넌트
-    public string textFormat = "{0}미터"; // 텍스트 형식
+    public string textFormat = "{0} 미터"; // 텍스트 형식
     
     [Header("플레이어 설정")]
     public Transform playerTransform; // 플레이어 Transform 참조
@@ -17,7 +17,7 @@ public class MovingDistance : MonoBehaviour
     public int decimalPlaces = 0; // 소수점 자릿수
     
     private float startXPosition; // 시작 x 위치
-    private float currentDistance; // 현재 이동 거리
+    public float currentDistance; // 현재 이동 거리
     
     void Start()
     {
