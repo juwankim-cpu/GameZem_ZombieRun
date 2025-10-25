@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 861436fcac734c443972af8d18ff4d83
+guid: 676c82e84b04441cdb2b6249473559e6
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 4865614754146971345
-    second: object_1_0
+      213: -7616644084646144780
+    second: character_hit_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -96,43 +96,17 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 4
-    buildTarget: Android
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 4
-    buildTarget: iOS
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: object_1_0
+      name: character_hit_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 169
-        height: 86
+        width: 34
+        height: 65
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 1de64daf6d2268340800000000000000
-      internalID: 4865614754146971345
+      spriteID: 4f4161a4f8e3c4690800000000000000
+      internalID: -7616644084646144780
       vertices: []
       indices: 
       edges: []
@@ -161,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      object_1_0: 4865614754146971345
+      character_hit_0: -7616644084646144780
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
