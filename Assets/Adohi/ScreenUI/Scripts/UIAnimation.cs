@@ -166,9 +166,6 @@ public class UIAnimation : MonoBehaviour
     {
         if (!isShowing) return;
 
-        // Hide 시작 전 끝 상태로 설정 (현재 위치에서 시작)
-        SetStartStateForHide();
-
         isShowing = false;
 
         OnHideStarted?.Invoke();
@@ -301,23 +298,6 @@ public class UIAnimation : MonoBehaviour
         }
         if (useRotation) rectTransform.localEulerAngles = rotationStart;
         if (useFade && canvasGroup != null) canvasGroup.alpha = fadeStart;
-    }
-
-    /// <summary>
-    /// Hide 애니메이션 시작 전 끝 상태 설정
-    /// </summary>
-    private void SetStartStateForHide()
-    {
-        if (useScale) rectTransform.localScale = scaleEnd;
-        if (usePosition)
-        {
-            if (useLocalPosition)
-                rectTransform.localPosition = positionEnd;
-            else
-                rectTransform.position = positionEnd;
-        }
-        if (useRotation) rectTransform.localEulerAngles = rotationEnd;
-        if (useFade && canvasGroup != null) canvasGroup.alpha = fadeEnd;
     }
 
     /// <summary>
