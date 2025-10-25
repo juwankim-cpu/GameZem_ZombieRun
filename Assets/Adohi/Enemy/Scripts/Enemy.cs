@@ -23,7 +23,13 @@ namespace ZombieRun.Adohi.Enemy
 
         public int slotIndex;
 
-        public Transform body;
+        public Animator animator;
+
+        public float attackAnimationDuration = 1f;
+        public float sightDelay = 1f;
+        public float resultDelay = 1f;
+
+        private float timesFaster = 1f;
 
 
         void Awake()
@@ -37,10 +43,23 @@ namespace ZombieRun.Adohi.Enemy
         {
             await enemyViewer.ShowAsnyc().SafeAsync(this);
             await enemyViewer.ScaleUpAsync().SafeAsync(this);
+            animator.SetTrigger("IsAttack");
+            await UniTask.Delay((int)(attackAnimationDuration * 1000 / timesFaster));
             await UniTask.WhenAll(
-                enemyLeftSightSystem.DoSight(1f),
-                enemyRightSightSystem.DoSight(1f)
+                enemyLeftSightSystem.DoSight(sightDelay / timesFaster),
+                enemyRightSightSystem.DoSight(sightDelay / timesFaster)
             ).SafeAsync(this);
+
+            if (isAttackPlayer)
+            {
+                animator.SetTrigger("IsSuccess");
+            }
+            else
+            {
+                animator.SetTrigger("IsFail");
+            }
+
+            await UniTask.Delay((int)(resultDelay * 1000 / timesFaster));
             await enemyViewer.ScaleDownAsync().SafeAsync(this);
 
 

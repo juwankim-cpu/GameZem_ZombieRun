@@ -349,7 +349,10 @@ MonoBehaviour:
   enemyRightSightSystem: {fileID: 6488373499654310169}
   isAttackPlayer: 0
   slotIndex: 0
-  body: {fileID: 3842517123716870405}
+  animator: {fileID: 5621522741017550394}
+  attackAnimationDuration: 1
+  sightDelay: 1
+  resultDelay: 1
 --- !u!114 &3089222329261646119
 MonoBehaviour:
   m_ObjectHideFlags: 0
