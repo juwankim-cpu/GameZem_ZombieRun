@@ -25,6 +25,7 @@ public class CharactorMove : MonoBehaviour
     }
     void Start()
     {
+        Init();
         // 메인 카메라 참조
         mainCamera = Camera.main;
         if (mainCamera == null)
@@ -38,32 +39,37 @@ public class CharactorMove : MonoBehaviour
 
     void Update()
     {
-        p_Animator.SetBool("Walk", false);
+        
         // 이동 입력 처리
         Vector3 movement = Vector3.zero;
         
         if(Input.GetKey(KeyCode.UpArrow))
         {
             movement += new Vector3(0, 1, 0);
-            p_Animator.SetBool("Walk", true);
+            
         }
             
         if(Input.GetKey(KeyCode.DownArrow))
         {
             movement += new Vector3(0, -1, 0);
-            p_Animator.SetBool("Walk", true);
+          
         }
     
         if(Input.GetKey(KeyCode.LeftArrow))
         {
             movement += new Vector3(-1, 0, 0);
-            p_Animator.SetBool("Walk", true);
+            
         }
         
-        if(Input.GetKey(KeyCode.UpArrow))
+        if(Input.GetKey(KeyCode.RightArrow))
         {
             movement += new Vector3(1, 0, 0);
-            p_Animator.SetBool("Walk", true);
+            
+        }
+
+        if (p_Animator != null) // p_Animator가 null이 아닌지 확인 (Init()이 호출되지 않았다면 null일 수 있음)
+        {
+            p_Animator.SetBool("Walk", movement != Vector3.zero);
         }
         
         // 이동 적용 (카메라 경계 제한 포함)
@@ -84,18 +90,18 @@ public class CharactorMove : MonoBehaviour
         }
 
         // 앉기 기능
-        if (Input.GetKeyDown(KeyCode.z)) // 키를 누르는 순간
+        if (Input.GetKeyDown(KeyCode.Z)) // 키를 누르는 순간
         {    GameStatus.sitDown = !GameStatus.sitDown;
              //앉기 애니메이션 재생
         }
 
-        if (Input.GetKeyDown(KeyCode.x))
+        if (Input.GetKeyDown(KeyCode.X))
         {
             //애교 Status값 갱신
             //애교 애니메이션 재생
         }
 
-        if (Input.GetKeyDown(KeyCode.c))
+        if (Input.GetKeyDown(KeyCode.C))
         {
             //공부 Status값 갱신
             //공부 애니메이션 재생
