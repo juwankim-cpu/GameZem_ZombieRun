@@ -36,7 +36,7 @@ public class CharactorMove : MonoBehaviour
         
         if(Input.GetKey(KeyCode.A))
             movement += new Vector3(-1, 0, 0);
-        
+    
         if(Input.GetKey(KeyCode.S))
             movement += new Vector3(0, -1, 0);
         
