@@ -7,33 +7,41 @@ namespace ZombieRun.Adohi.Enemy
 {
     public class Enemy : MonoBehaviour
     {
+        public enum EnemyType
+        {
+
+            Soilder,
+            Grandma,
+            Teacher
+        }
+        public EnemyType enemyType;
         public EnemyViewer enemyViewer;
         public EnemySightSystem enemyLeftSightSystem;
         public EnemySightSystem enemyRightSightSystem;
 
+        public bool isAttackPlayer = false;
+
         public int slotIndex;
 
-        // Start is called once before the first execution of Update after the MonoBehaviour is created
-        void Start()
+        public Transform body;
+
+
+        void Awake()
         {
-
+            enemyLeftSightSystem.Initialize(this);
+            enemyRightSightSystem.Initialize(this);
         }
-
-        // Update is called once per frame
-        void Update()
-        {
-
-        }
-
 
         [ProButton]
         public async UniTask DoActionAsync()
         {
             await enemyViewer.ShowAsnyc().SafeAsync(this);
+            await enemyViewer.ScaleUpAsync().SafeAsync(this);
             await UniTask.WhenAll(
                 enemyLeftSightSystem.DoSight(1f),
                 enemyRightSightSystem.DoSight(1f)
             ).SafeAsync(this);
+            await enemyViewer.ScaleDownAsync().SafeAsync(this);
 
 
 

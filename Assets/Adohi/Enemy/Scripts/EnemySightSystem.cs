@@ -6,13 +6,15 @@ using LibTessDotNet;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using com.cyborgAssets.inspectorButtonPro;
+using static ZombieRun.Adohi.Enemy.Enemy;
 
-namespace ZombieRun.Adohi
+namespace ZombieRun.Adohi.Enemy
 {
     [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
     public class EnemySightSystem : MonoBehaviour
     {
         [Header("시야 설정")]
+        public Transform sightOrigin;
         [SerializeField] private float width = 4f;
         [SerializeField] private float distance = 5f;
         [SerializeField] private float maxDistance = 5f;
@@ -53,6 +55,9 @@ namespace ZombieRun.Adohi
         private MeshFilter meshFilter;
         private MeshRenderer meshRenderer;
 
+        private Enemy enemy;
+        private bool isAttacking = false;
+
         // 그림자 사다리꼴 정의 (로컬 좌표)
         struct ShadowTrapezoid
         {
@@ -62,8 +67,22 @@ namespace ZombieRun.Adohi
             public Vector2 bottomRight;
         }
 
+        public void Initialize(Enemy enemy)
+        {
+            this.enemy = enemy;
+        }
+
         void Start()
         {
+            // sightOrigin이 설정되지 않았으면 자기 자신을 사용
+            if (sightOrigin == null)
+            {
+                sightOrigin = transform;
+            }
+
+            SetAmplify(Random.Range(1f, 1.5f));
+            OffsetAngle(Random.Range(-10f, 10f));
+
             meshFilter = GetComponent<MeshFilter>();
             meshRenderer = GetComponent<MeshRenderer>();
 
@@ -106,18 +125,77 @@ namespace ZombieRun.Adohi
             meshRenderer.sortingLayerName = sortingLayerName;
             meshRenderer.sortingOrder = sortingOrder;
 
+
+
             CreateRectangle();
         }
 
         void Update()
         {
             CreateRectangle();
+
+            if (isAttacking && !enemy.isAttackPlayer)
+            {
+                switch (enemy.enemyType)
+                {
+                    case EnemyType.Soilder:
+                        //인비저블 조건으로 다 바꿔야함
+                        if (IsVisible(EnemyManager.Instance.player.Value.transform.position))
+                        {
+                            Debug.Log("Player is visible");
+                            enemy.isAttackPlayer = true;
+                        }
+                        else
+                        {
+                            Debug.Log("Player is invisible");
+                        }
+                        break;
+                    case EnemyType.Grandma:
+                        //인비저블 조건으로 다 바꿔야함
+                        if (!IsVisible(EnemyManager.Instance.player.Value.transform.position))
+                        {
+                            Debug.Log("Player is visible");
+                            enemy.isAttackPlayer = true;
+                        }
+                        else
+                        {
+                            Debug.Log("Player is invisible");
+                        }
+                        break;
+                    case EnemyType.Teacher:
+                        //인비저블 조건으로 다 바꿔야함
+                        if (IsVisible(EnemyManager.Instance.player.Value.transform.position))
+                        {
+                            Debug.Log("Player is visible");
+                            enemy.isAttackPlayer = true;
+                        }
+                        else
+                        {
+                            Debug.Log("Player is invisible");
+                        }
+                        break;
+                }
+            }
         }
 
         void OnDestroy()
         {
             currentTween?.Kill();
         }
+
+        public void SetAmplify(float amplify)
+        {
+            leftAngle = leftAngle * amplify;
+            rightAngle = rightAngle * amplify;
+        }
+
+        public void OffsetAngle(float offset)
+        {
+            leftAngle = leftAngle + offset;
+            rightAngle = rightAngle + offset;
+        }
+
+
 
 
         private Tween currentTween;
@@ -127,12 +205,13 @@ namespace ZombieRun.Adohi
         public async UniTask DoSight(float duration, Ease ease = Ease.OutQuad)
         {
             currentTween?.Kill();
+            isAttacking = true;
             distance = 0f;
             currentTween = DOTween.To(() => distance, x => distance = x, maxDistance, duration)
                 .SetEase(ease);
             await currentTween.ToUniTask(cancellationToken: this.GetCancellationTokenOnDestroy());
             await UniTask.Delay(500);
-
+            isAttacking = false;
             distance = 0f;
         }
 
@@ -269,6 +348,13 @@ namespace ZombieRun.Adohi
 
         void CreateRectangle()
         {
+            // 메시 오브젝트의 위치와 회전을 sightOrigin과 동기화
+            if (sightOrigin != null && sightOrigin != transform)
+            {
+                transform.position = sightOrigin.position;
+                transform.rotation = sightOrigin.rotation;
+            }
+
             mesh.Clear();
 
             float halfWidth = width / 2f;
@@ -299,9 +385,9 @@ namespace ZombieRun.Adohi
             List<ShadowTrapezoid> shadowTrapezoids = new List<ShadowTrapezoid>();
 
             Collider2D[] colliders = Physics2D.OverlapBoxAll(
-                transform.position + transform.TransformDirection(new Vector2(0, -distance / 2f)),
+                sightOrigin.position + sightOrigin.TransformDirection(new Vector2(0, -distance / 2f)),
                 new Vector2(width + 2f, distance + 2f),
-                transform.eulerAngles.z,
+                sightOrigin.eulerAngles.z,
                 obstacleLayer
             );
 
@@ -348,13 +434,13 @@ namespace ZombieRun.Adohi
                         worldCorners[i] = boxWorldCenter + rotated;
                     }
 
-                    // 월드 좌표를 EnemySightSystem의 로컬 좌표로 변환
+                    // 월드 좌표를 메시 로컬 좌표로 변환 (메시는 이 오브젝트에 그려짐)
                     Vector2 cornerBL = transform.InverseTransformPoint(worldCorners[0]);
                     Vector2 cornerBR = transform.InverseTransformPoint(worldCorners[1]);
                     Vector2 cornerTL = transform.InverseTransformPoint(worldCorners[2]);
                     Vector2 cornerTR = transform.InverseTransformPoint(worldCorners[3]);
 
-                    // 박스 중심도 로컬 좌표로 변환
+                    // 박스 중심도 메시 로컬 좌표로 변환
                     Vector2 boxLocalCenter = transform.InverseTransformPoint(boxWorldCenter);
 
                     // 박스가 원점보다 아래에 있는지 확인 (시야 범위 내에 있어야 함)
@@ -681,9 +767,9 @@ namespace ZombieRun.Adohi
 
             // 그림자 계산
             Collider2D[] colliders = Physics2D.OverlapBoxAll(
-                transform.position + transform.TransformDirection(new Vector2(0, -distance / 2f)),
+                sightOrigin.position + sightOrigin.TransformDirection(new Vector2(0, -distance / 2f)),
                 new Vector2(width + 2f, distance + 2f),
-                transform.eulerAngles.z,
+                sightOrigin.eulerAngles.z,
                 obstacleLayer
             );
 
