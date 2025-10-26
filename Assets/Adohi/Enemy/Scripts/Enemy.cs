@@ -44,7 +44,7 @@ namespace ZombieRun.Adohi.Enemy
             enemyRightSightSystem.Initialize(this);
 
             if (enemyType == EnemyType.Grandma) isAttackPlayer.Value = true;
-            
+
             // CancellationTokenSource 생성
             cancellationTokenSource = new CancellationTokenSource();
         }
@@ -72,22 +72,22 @@ namespace ZombieRun.Adohi.Enemy
             try
             {
                 var ct = cancellationTokenSource.Token;
-                
+
                 await enemyViewer.ShowAsnyc().AttachExternalCancellation(ct);
                 await enemyViewer.ScaleUpAsync().AttachExternalCancellation(ct);
-                
+
                 if (ct.IsCancellationRequested) return;
                 animator.SetTrigger("IsAttack");
-                
+
                 await UniTask.Delay((int)(attackAnimationDuration * 1000 / timesFaster), cancellationToken: ct);
-                
+
                 await UniTask.WhenAll(
                     enemyLeftSightSystem.DoSight(sightDelay / timesFaster),
                     enemyRightSightSystem.DoSight(sightDelay / timesFaster)
                 ).AttachExternalCancellation(ct);
 
                 if (ct.IsCancellationRequested) return;
-                
+
                 if (isAttackPlayer)
                 {
                     animator.SetTrigger("IsSuccess");
@@ -108,7 +108,7 @@ namespace ZombieRun.Adohi.Enemy
 
                 if (EnemySpawner.Instance != null)
                     EnemySpawner.Instance.ReleaseEnemy(this);
-                
+
                 if (gameObject != null)
                     Destroy(gameObject);
             }
