@@ -8,8 +8,7 @@ public class ObstacleMover : MonoBehaviour
 
     void Update()
     {
-        if (GameStatus.sitDown)
-            return;
+
         // 1. X축(왼쪽)으로 이동
         // moveSpeed는 ObstacleManager로부터 랜덤 값을 전달받아 사용합니다.
         transform.Translate(Vector3.left * moveSpeed * Time.deltaTime, Space.World);

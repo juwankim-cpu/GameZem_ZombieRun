@@ -7,9 +7,6 @@ public class ItemMover : MonoBehaviour
 
     void Update()
     {
-        if (GameStatus.sitDown)
-            return;
-
         // X축(왼쪽)으로 이동
         transform.Translate(Vector3.left * moveSpeed * Time.deltaTime, Space.World);
 

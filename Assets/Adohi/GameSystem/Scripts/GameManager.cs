@@ -6,6 +6,7 @@ using Pixelplacement;
 using TMPro;
 using TMPro.Examples;
 using UniRx;
+using Unity.VisualScripting;
 using UnityAtoms.BaseAtoms;
 using UnityEngine;
 using ZombieRun.Adohi.Enemy;
@@ -15,7 +16,7 @@ using ZombieRun.Adohi.Titles;
 
 namespace ZombieRun.Adohi.GameSystem
 {
-    public class GameManager : Singleton<GameManager>
+    public class GameManager : Pixelplacement.Singleton<GameManager>
     {
 
         public FloatReference stageClearScoreConfig;
@@ -41,6 +42,8 @@ namespace ZombieRun.Adohi.GameSystem
 
         public bool isFirstStage = false;
 
+        public bool initValues;
+
 
         public float timeFromStart;
 
@@ -65,7 +68,7 @@ namespace ZombieRun.Adohi.GameSystem
 
         private UnityEngine.U2D.PixelPerfectCamera pixelPerfectCamera;
 
-        public bool IsTitleShowing;
+        [HideInInspector] public bool IsTitleShowing = false;
 
         public bool IsPlaying => !IsTitleShowing;
 
@@ -77,8 +80,16 @@ namespace ZombieRun.Adohi.GameSystem
         public SoundID titleBGM;
         public SoundID stageBGM;
 
+        [Header("Sfx")]
+        public SoundID dieSfx;
+        public SoundID hitSfx;
+        public SoundID uiSfx;
+
+
         void Awake()
         {
+
+            Time.timeScale = 1f;
             if (screenUI != null) screenUI.SetActive(false);
 
             // 메인 카메라에서 PixelPerfectCamera 컴포넌트 가져오기
@@ -93,15 +104,27 @@ namespace ZombieRun.Adohi.GameSystem
 
             if (isFirstStage)
             {
-                currentHealth.Value = 100f;
-                currentBoost.Value = 0f;
                 IsTitleShowing = true;
                 character.GetComponent<Animator>().SetTrigger("IsTitleStart");
 
 
             }
 
-            Time.timeScale = 1f;
+            else
+            {
+                IsTitleShowing = true;
+
+
+            }
+
+            if (initValues)
+            {
+                currentHealth.Value = 100f;
+                currentBoost.Value = 0f;
+                currentScore.Value = 0f;
+            }
+
+
         }
 
         void Start()
@@ -129,17 +152,19 @@ namespace ZombieRun.Adohi.GameSystem
 
             PlayAsync().SafeAsync(this).Forget();
 
-            if (isFirstStage)
+            if (initValues)
             {
                 BroAudio.Play(titleBGM, 1f).AsBGM();
             }
+
+            currentBoost.Value += 0.01f;
         }
 
         public void Update()
         {
             timeFromStart += Time.deltaTime;
 
-            if (IsPlaying && !GameStatus.sitDown)
+            if (IsPlaying)
             {
                 currentScore.Value += scorePerSecond * Time.deltaTime * speedMultiply;
             }
@@ -148,27 +173,25 @@ namespace ZombieRun.Adohi.GameSystem
             {
 
                 currentHealth.Value -= healthDecreasePerSecond * difficulty * Time.deltaTime;
+                currentBoost.Value += healthDecreasePerSecond * 0.5f * difficulty * Time.deltaTime;
             }
 
-            if (isEnd)
+            if (Input.GetKeyDown(KeyCode.R))
             {
-                if (Input.GetKeyDown(KeyCode.R))
-                {
-                    Time.timeScale = 1f;
-                    sceneManagerWithTransition.LoadSceneByName("Stage_1");
-                }
+                Time.timeScale = 1f;
+                sceneManagerWithTransition.LoadSceneByName("Stage_1");
             }
 
-
+            difficulty = currentScore.Value / 150f + 1f;
         }
 
         public async UniTask PlayAsync()
         {
-            if (isFirstStage)
+            if (initValues)
             {
                 await TitleStartAsync();
-                character.GetComponent<Animator>().SetTrigger("IsTitleEnd");
             }
+            character.GetComponent<Animator>().SetTrigger("IsTitleEnd");
 
             StageStart();
             //show stage ui
@@ -183,9 +206,11 @@ namespace ZombieRun.Adohi.GameSystem
             if (titleMover != null)
             {
 
+
                 await UniTask.Delay(2000);
                 await UniTask.WaitUntil(() => Input.GetKeyDown(titleStartKey));
                 BroAudio.Stop(BroAudioType.Music, 1f);
+                BroAudio.Play(uiSfx);
                 await titleMover.EndAsync();
                 IsTitleShowing = false;
             }
@@ -197,7 +222,7 @@ namespace ZombieRun.Adohi.GameSystem
         {
             if (screenUI != null) screenUI.SetActive(true);
 
-            if (isFirstStage)
+            if (initValues)
             {
 
                 timeFromStart = 0f;
@@ -209,7 +234,7 @@ namespace ZombieRun.Adohi.GameSystem
 
             BroAudio.Play(stageBGM, 1f).AsBGM();
             enemyManager.StartSpawn();
-
+            IsTitleShowing = false;
             // 게임 시작 시 줌아웃 효과
             ZoomCamera(zoomStartPPU, zoomEndPPU, zoomDuration).Forget();
         }
@@ -262,6 +287,8 @@ namespace ZombieRun.Adohi.GameSystem
         public void GetHit(float damage)
         {
             currentHealth.Value -= damage;
+
+
             if (currentHealth.Value <= 0f && !isEnd)
             {
                 GameEnd();
@@ -272,6 +299,8 @@ namespace ZombieRun.Adohi.GameSystem
         {
             if (isEnd) return;
             isEnd = true;
+            BroAudio.Play(dieSfx);
+
             Time.timeScale = 0f;
             StageEndAsync();
         }

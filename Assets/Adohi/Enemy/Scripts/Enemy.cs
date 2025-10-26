@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using Ami.BroAudio;
 using com.cyborgAssets.inspectorButtonPro;
 using Cysharp.Threading.Tasks;
 using UniRx;
@@ -36,6 +37,8 @@ namespace ZombieRun.Adohi.Enemy
 
         private float timesFaster = 1f;
         private CancellationTokenSource cancellationTokenSource;
+
+        public SoundID hitSfx;
 
 
         void Awake()
@@ -81,11 +84,13 @@ namespace ZombieRun.Adohi.Enemy
 
                 await UniTask.Delay((int)(attackAnimationDuration * 1000 / timesFaster), cancellationToken: ct);
 
+                BroAudio.Play(hitSfx);
                 await UniTask.WhenAll(
                     enemyLeftSightSystem.DoSight(sightDelay / timesFaster),
                     enemyRightSightSystem.DoSight(sightDelay / timesFaster)
                 ).AttachExternalCancellation(ct);
 
+                animator.SetTrigger("IsAttackEnd");
                 if (ct.IsCancellationRequested) return;
 
                 if (isAttackPlayer)

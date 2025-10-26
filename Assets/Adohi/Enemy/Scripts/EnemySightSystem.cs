@@ -7,6 +7,7 @@ using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using com.cyborgAssets.inspectorButtonPro;
 using static ZombieRun.Adohi.Enemy.Enemy;
+using ZombieRun.Adohi.GameSystem;
 
 namespace ZombieRun.Adohi.Enemy
 {
@@ -80,8 +81,8 @@ namespace ZombieRun.Adohi.Enemy
                 sightOrigin = transform;
             }
 
-            SetAmplify(Random.Range(1f, 1.5f));
-            OffsetAngle(Random.Range(-10f, 10f));
+            SetAmplify(Random.Range(1f, 1.5f) * GameManager.Instance.difficulty);
+            OffsetAngle(Random.Range(-10f, 10f) * GameManager.Instance.difficulty);
 
             meshFilter = GetComponent<MeshFilter>();
             meshRenderer = GetComponent<MeshRenderer>();

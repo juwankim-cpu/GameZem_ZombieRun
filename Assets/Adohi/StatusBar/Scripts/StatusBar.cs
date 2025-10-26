@@ -64,11 +64,7 @@ public class StatusBar : MonoBehaviour
             {
                 Debug.Log("StatusBar: Atom 이벤트 구독 완료");
             }
-
-
         }
-
-        UpdateBar(true);
     }
 
     void OnDisable()

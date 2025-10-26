@@ -391,6 +391,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4449359111531990173}
   - component: {fileID: 5026987372135813078}
+  - component: {fileID: 8387990925131096193}
   m_Layer: 0
   m_Name: GameManager_2
   m_TagString: Untagged
@@ -431,26 +432,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ab7c608e13c97b409e1675a3ef88e91, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _dontDestroyOnLoad: 0
   stageClearScoreConfig:
-  - _usage: 2
+    _usage: 0
     _value: 0
     _constant: {fileID: 0}
-    _variable: {fileID: 11400000, guid: 6df574524e0c4f345b7cbd2241a385df, type: 2}
-    _variableInstancer: {fileID: 0}
-  - _usage: 2
-    _value: 0
-    _constant: {fileID: 0}
-    _variable: {fileID: 11400000, guid: db368f8ede3b8a84f944120b233cb81e, type: 2}
-    _variableInstancer: {fileID: 0}
-  - _usage: 2
-    _value: 0
-    _constant: {fileID: 0}
-    _variable: {fileID: 11400000, guid: 4d0148102f4c9fb489d07b111dc5a429, type: 2}
-    _variableInstancer: {fileID: 0}
-  - _usage: 2
-    _value: 0
-    _constant: {fileID: 0}
-    _variable: {fileID: 11400000, guid: f8ba779ba616d5342b833e27947484e5, type: 2}
+    _variable: {fileID: 0}
     _variableInstancer: {fileID: 0}
   currentStage:
     _usage: 0
@@ -479,10 +466,42 @@ MonoBehaviour:
     _variableInstancer: {fileID: 0}
   titleMover: {fileID: 1665279550334558220}
   titleStartKey: 32
-  backgroundController: {fileID: 0}
   screenUI: {fileID: 7261659552169917643}
   rankingSystem: {fileID: 9042659237741103213}
+  isFirstStage: 0
+  initValues: 0
   timeFromStart: 0
+  sceneManagerWithTransition: {fileID: 0}
+  character: {fileID: 0}
+  enemyManager: {fileID: 0}
+  scorePerSecond: 1
+  speedMultiply: 1
+  zoomStartPPU: 100
+  zoomEndPPU: 50
+  zoomDuration: 2
+  IsTitleShowing: 0
+  difficulty: 1
+  healthDecreasePerSecond: 1
+  titleBGM:
+    ID: 0
+    _sourceAsset: {fileID: 0}
+    <DebugObject>k__BackingField: {fileID: 3771504618097324565}
+  stageBGM:
+    ID: 0
+    _sourceAsset: {fileID: 0}
+    <DebugObject>k__BackingField: {fileID: 3771504618097324565}
+--- !u!114 &8387990925131096193
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3771504618097324565}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55938fb1577dd4ad3af7e994048c86f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &4036672129168570148
 GameObject:
   m_ObjectHideFlags: 0

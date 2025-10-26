@@ -355,11 +355,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7166678403689681455, guid: fad16afcc298c01439a2ff40a7c82d46, type: 3}
       propertyPath: sortingLayerName
-      value: Map
+      value: Foreground
       objectReference: {fileID: 0}
     - target: {fileID: 7571826609627211594, guid: fad16afcc298c01439a2ff40a7c82d46, type: 3}
       propertyPath: sortingLayerName
-      value: MAp
+      value: Floor
+      objectReference: {fileID: 0}
+    - target: {fileID: 8544746530858246002, guid: fad16afcc298c01439a2ff40a7c82d46, type: 3}
+      propertyPath: initValues
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8544746530858246002, guid: fad16afcc298c01439a2ff40a7c82d46, type: 3}
+      propertyPath: isFirstStage
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:

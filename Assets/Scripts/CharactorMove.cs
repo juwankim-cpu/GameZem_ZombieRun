@@ -2,6 +2,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using ZombieRun.Adohi.GameSystem;
 using System.Collections;
+using Ami.BroAudio;
 
 public class CharactorMove : MonoBehaviour
 {
@@ -40,7 +41,9 @@ public class CharactorMove : MonoBehaviour
     private Vector3 initialScale;
 
     public float chiarSensorRange = 1f;
-    HPManager hpManager;
+
+    public SoundID hitSfx;
+
 
     private SpriteRenderer spriteRenderer;
     void Init()
@@ -49,6 +52,13 @@ public class CharactorMove : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         initialScale = transform.localScale;
         originalMoveSpeed = moveSpeed; // 원래 속도 저장
+
+
+        GameStatus.sitDown = false;
+        GameStatus.hearted = false;
+        GameStatus.study = false;
+        GameStatus.hitted = false;
+
     }
     void Start()
     {
@@ -262,6 +272,7 @@ public class CharactorMove : MonoBehaviour
         }
         p_Animator.SetBool("Hit", true);
         GameStatus.hitted = true;
+        BroAudio.Play(hitSfx);
 
         StartCoroutine(HittedCoroutine());
         StartCoroutine(InvincibilityCoroutine());

@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using ZombieRun.Adohi.GameSystem;
+using Ami.BroAudio;
 
 public class ItemManager : MonoBehaviour
 {
@@ -24,6 +25,8 @@ public class ItemManager : MonoBehaviour
     public float hpRecoveryAmount = 5f; // HP 아이템 회복량
     public float buffGainAmount = 5f; // 버프 아이템 획득량
 
+    public SoundID itemGetSfx;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -44,7 +47,7 @@ public class ItemManager : MonoBehaviour
         while (true)
         {
             yield return new WaitForSeconds(itemSpawnInterval);
-            if (!GameManager.Instance.IsPlaying)
+            if (GameManager.Instance.IsPlaying)
             {
                 SpawnRandomItem();
             }

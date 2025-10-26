@@ -15,12 +15,42 @@ namespace ZombieRun.Adohi.SceneManagement
         [Header("트랜지션 설정")]
         [SerializeField] private TransitionSettings transitionSettings;
         [SerializeField] private float transitionDuration = 1f;
+        [SerializeField] private bool autoFindTransitionSettings = true;
 
         [Header("다음 씬 설정")]
 #if UNITY_EDITOR
         [SerializeField] private SceneAsset nextScene;
 #endif
         [SerializeField] private string nextScenePath;
+
+        public bool isSceneTransition = false;
+
+        void Awake()
+        {
+            // 트랜지션 설정이 없으면 자동으로 찾기
+            if (transitionSettings == null && autoFindTransitionSettings)
+            {
+                TryFindTransitionSettings();
+            }
+        }
+
+        /// <summary>
+        /// TransitionSettings를 자동으로 찾아서 할당
+        /// </summary>
+        private void TryFindTransitionSettings()
+        {
+            // Resources 폴더에서 TransitionSettings 찾기
+            TransitionSettings[] allSettings = Resources.FindObjectsOfTypeAll<TransitionSettings>();
+            if (allSettings.Length > 0)
+            {
+                transitionSettings = allSettings[0];
+                Debug.Log($"[SceneManagerWithTransition] TransitionSettings를 자동으로 찾았습니다: {transitionSettings.name}");
+            }
+            else
+            {
+                Debug.LogWarning("[SceneManagerWithTransition] TransitionSettings를 찾을 수 없습니다. Inspector에서 수동으로 할당하세요.");
+            }
+        }
 
         /// <summary>
         /// 씬 파일로 씬 전환 (SceneAsset)
@@ -60,14 +90,29 @@ namespace ZombieRun.Adohi.SceneManagement
         /// </summary>
         public void LoadSceneByName(string sceneName, float duration)
         {
+            if (isSceneTransition)
+            {
+                return;
+            }
+
+            isSceneTransition = true;
+
             if (transitionSettings == null)
             {
-                Debug.LogError("TransitionSettings가 설정되지 않았습니다!");
+                Debug.LogError("[SceneManagerWithTransition] TransitionSettings가 설정되지 않았습니다! 트랜지션 없이 씬을 로드합니다.");
                 SceneManager.LoadScene(sceneName);
                 return;
             }
 
-            TransitionManager.Instance().Transition(sceneName, transitionSettings, duration);
+            var transitionManager = TransitionManager.Instance();
+            if (transitionManager == null)
+            {
+                Debug.LogError("[SceneManagerWithTransition] TransitionManager를 찾을 수 없습니다! 트랜지션 없이 씬을 로드합니다.");
+                SceneManager.LoadScene(sceneName);
+                return;
+            }
+
+            transitionManager.Transition(sceneName, transitionSettings, duration);
         }
 
         /// <summary>
@@ -83,9 +128,16 @@ namespace ZombieRun.Adohi.SceneManagement
         /// </summary>
         public void LoadSceneByIndex(int sceneIndex, float duration)
         {
+
+            if (isSceneTransition)
+            {
+                return;
+            }
+
+            isSceneTransition = true;
             if (transitionSettings == null)
             {
-                Debug.LogError("TransitionSettings가 설정되지 않았습니다!");
+                Debug.LogError("[SceneManagerWithTransition] TransitionSettings가 설정되지 않았습니다! 트랜지션 없이 씬을 로드합니다.");
                 SceneManager.LoadScene(sceneIndex);
                 return;
             }
@@ -93,12 +145,21 @@ namespace ZombieRun.Adohi.SceneManagement
             string sceneName = SceneUtility.GetScenePathByBuildIndex(sceneIndex);
             if (string.IsNullOrEmpty(sceneName))
             {
-                Debug.LogError($"씬 인덱스 {sceneIndex}를 찾을 수 없습니다!");
+                Debug.LogError($"[SceneManagerWithTransition] 씬 인덱스 {sceneIndex}를 찾을 수 없습니다!");
                 return;
             }
 
             sceneName = System.IO.Path.GetFileNameWithoutExtension(sceneName);
-            TransitionManager.Instance().Transition(sceneName, transitionSettings, duration);
+
+            var transitionManager = TransitionManager.Instance();
+            if (transitionManager == null)
+            {
+                Debug.LogError("[SceneManagerWithTransition] TransitionManager를 찾을 수 없습니다! 트랜지션 없이 씬을 로드합니다.");
+                SceneManager.LoadScene(sceneName);
+                return;
+            }
+
+            transitionManager.Transition(sceneName, transitionSettings, duration);
         }
 
         /// <summary>

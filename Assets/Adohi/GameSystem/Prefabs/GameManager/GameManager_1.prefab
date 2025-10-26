@@ -2133,10 +2133,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 800, y: 600}
+  m_ReferenceResolution: {x: 3840, y: 2160}
   m_ScreenMatchMode: 0
   m_MatchWidthOrHeight: 0
   m_PhysicalUnit: 3
@@ -3528,7 +3528,7 @@ MonoBehaviour:
   useFade: 0
   fadeHidden: 0
   fadeVisible: 1
-  hideOnStart: 1
+  hideOnStart: 0
   showOnStart: 0
 --- !u!1 &6831075510881370866
 GameObject:
@@ -4762,6 +4762,7 @@ MonoBehaviour:
   screenUI: {fileID: 31368867338052356}
   rankingSystem: {fileID: 3811855141129630917}
   isFirstStage: 1
+  initValues: 1
   timeFromStart: 0
   sceneManagerWithTransition: {fileID: 6582322565599624682}
   character: {fileID: 5164183369691523609}
@@ -4781,6 +4782,18 @@ MonoBehaviour:
   stageBGM:
     ID: 268435458
     _sourceAsset: {fileID: 11400000, guid: a185eb1e4e7e36b4699fc29168952c78, type: 2}
+    <DebugObject>k__BackingField: {fileID: 8515488629803339489}
+  dieSfx:
+    ID: 1073741837
+    _sourceAsset: {fileID: 11400000, guid: 73ea567389bac114aac405527c5c5822, type: 2}
+    <DebugObject>k__BackingField: {fileID: 8515488629803339489}
+  hitSfx:
+    ID: 1073741839
+    _sourceAsset: {fileID: 11400000, guid: 73ea567389bac114aac405527c5c5822, type: 2}
+    <DebugObject>k__BackingField: {fileID: 8515488629803339489}
+  uiSfx:
+    ID: 1073741841
+    _sourceAsset: {fileID: 11400000, guid: 73ea567389bac114aac405527c5c5822, type: 2}
     <DebugObject>k__BackingField: {fileID: 8515488629803339489}
 --- !u!114 &3962610801773781249
 MonoBehaviour:
@@ -5018,8 +5031,10 @@ MonoBehaviour:
   _dontDestroyOnLoad: 0
   transitionSettings: {fileID: 11400000, guid: 057babd6f13132c449650d99e3c4e99c, type: 2}
   transitionDuration: 1
+  autoFindTransitionSettings: 1
   nextScene: {fileID: 102900000, guid: 59d55f407cc167748af78d3aff49fe38, type: 3}
   nextScenePath: Stage_2
+  isSceneTransition: 0
 --- !u!114 &9204242258602607738
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5091,6 +5106,10 @@ PrefabInstance:
       value: -4.5
       objectReference: {fileID: 0}
     - target: {fileID: 2978347255349514828, guid: cf709025b9d49b64a8c1efa718a8f823, type: 3}
+      propertyPath: itemGetSfx.ID
+      value: 1073741838
+      objectReference: {fileID: 0}
+    - target: {fileID: 2978347255349514828, guid: cf709025b9d49b64a8c1efa718a8f823, type: 3}
       propertyPath: buffGainAmount
       value: 20
       objectReference: {fileID: 0}
@@ -5098,6 +5117,14 @@ PrefabInstance:
       propertyPath: hpRecoveryAmount
       value: 20
       objectReference: {fileID: 0}
+    - target: {fileID: 2978347255349514828, guid: cf709025b9d49b64a8c1efa718a8f823, type: 3}
+      propertyPath: itemGetSfx._sourceAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 73ea567389bac114aac405527c5c5822, type: 2}
+    - target: {fileID: 2978347255349514828, guid: cf709025b9d49b64a8c1efa718a8f823, type: 3}
+      propertyPath: itemGetSfx.<DebugObject>k__BackingField
+      value: 
+      objectReference: {fileID: 2699153955131995267}
     - target: {fileID: 6490041295803248731, guid: cf709025b9d49b64a8c1efa718a8f823, type: 3}
       propertyPath: m_LocalPosition.x
       value: -1.2
@@ -5143,6 +5170,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: cf709025b9d49b64a8c1efa718a8f823, type: 3}
+--- !u!1 &2699153955131995267 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 54762959153028756, guid: cf709025b9d49b64a8c1efa718a8f823, type: 3}
+  m_PrefabInstance: {fileID: 2717883513022048791}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &9198213611127183948 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6490041295803248731, guid: cf709025b9d49b64a8c1efa718a8f823, type: 3}
@@ -5263,11 +5295,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4137345758029143351, guid: 63cd09a1182f1bc43acbf90e5fb5bc96, type: 3}
       propertyPath: maxSpeed
-      value: 5
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 4137345758029143351, guid: 63cd09a1182f1bc43acbf90e5fb5bc96, type: 3}
       propertyPath: minSpeed
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4137345758029143351, guid: 63cd09a1182f1bc43acbf90e5fb5bc96, type: 3}
       propertyPath: maxYPosition
@@ -5279,7 +5311,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4137345758029143351, guid: 63cd09a1182f1bc43acbf90e5fb5bc96, type: 3}
       propertyPath: maxObstacleSpawnInterval
-      value: 4
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4137345758029143351, guid: 63cd09a1182f1bc43acbf90e5fb5bc96, type: 3}
+      propertyPath: minObstacleSpawnInterval
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 4137345758029143351, guid: 63cd09a1182f1bc43acbf90e5fb5bc96, type: 3}
       propertyPath: 'obstaclePrefabs.Array.data[0]'
@@ -5348,6 +5384,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3256491090811963394, guid: 97db64890f2d5d749ab665dda9805ed0, type: 3}
+      propertyPath: hitSfx.ID
+      value: 1073741839
+      objectReference: {fileID: 0}
+    - target: {fileID: 3256491090811963394, guid: 97db64890f2d5d749ab665dda9805ed0, type: 3}
       propertyPath: yMaxLimit
       value: -0.3
       objectReference: {fileID: 0}
@@ -5359,6 +5399,14 @@ PrefabInstance:
       propertyPath: feverDuration
       value: 5
       objectReference: {fileID: 0}
+    - target: {fileID: 3256491090811963394, guid: 97db64890f2d5d749ab665dda9805ed0, type: 3}
+      propertyPath: hitSfx._sourceAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 73ea567389bac114aac405527c5c5822, type: 2}
+    - target: {fileID: 3256491090811963394, guid: 97db64890f2d5d749ab665dda9805ed0, type: 3}
+      propertyPath: hitSfx.<DebugObject>k__BackingField
+      value: 
+      objectReference: {fileID: 50484978159782694}
     - target: {fileID: 6816549462212704945, guid: 97db64890f2d5d749ab665dda9805ed0, type: 3}
       propertyPath: m_SortingOrder
       value: 2600

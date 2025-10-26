@@ -1,7 +1,8 @@
+using System;
+using System.Threading;
 using UnityEngine;
 using DG.Tweening;
 using Cysharp.Threading.Tasks;
-using System;
 using com.cyborgAssets.inspectorButtonPro;
 
 public class UIAnimation : MonoBehaviour
@@ -38,12 +39,27 @@ public class UIAnimation : MonoBehaviour
     private CanvasGroup canvasGroup;
     private Sequence currentSequence;
     private bool isShowing = false;
+    private CancellationTokenSource cancellationTokenSource;
 
     // 이벤트
     public event Action OnShowCompleted;
     public event Action OnHideCompleted;
 
     void Awake()
+    {
+        InitializeComponents();
+    }
+
+    void OnEnable()
+    {
+        // 씬 재시작 시 컴포넌트가 null일 수 있으므로 재초기화
+        if (rectTransform == null)
+        {
+            InitializeComponents();
+        }
+    }
+
+    private void InitializeComponents()
     {
         rectTransform = GetComponent<RectTransform>();
 
@@ -54,6 +70,13 @@ public class UIAnimation : MonoBehaviour
             {
                 canvasGroup = gameObject.AddComponent<CanvasGroup>();
             }
+        }
+
+        // CancellationTokenSource 생성 (기존 것이 있으면 재생성)
+        if (cancellationTokenSource == null || cancellationTokenSource.IsCancellationRequested)
+        {
+            cancellationTokenSource?.Dispose();
+            cancellationTokenSource = new CancellationTokenSource();
         }
     }
 
@@ -81,6 +104,10 @@ public class UIAnimation : MonoBehaviour
     void OnDestroy()
     {
         currentSequence?.Kill();
+
+        // 게임오브젝트 파괴 시 모든 진행 중인 UniTask 취소
+        cancellationTokenSource?.Cancel();
+        cancellationTokenSource?.Dispose();
     }
 
     /// <summary>
@@ -88,15 +115,23 @@ public class UIAnimation : MonoBehaviour
     /// </summary>
     public async UniTask Show()
     {
-        gameObject.SetActive(true);
+        try
+        {
+            gameObject.SetActive(true);
 
-        // 숨긴 상태로 설정 (active는 그대로 유지)
-        SetVisualState(false);
+            // 숨긴 상태로 설정 (active는 그대로 유지)
+            SetVisualState(false);
 
-        await PlayAnimation(true);
+            await PlayAnimation(true);
 
-        isShowing = true;
-        OnShowCompleted?.Invoke();
+            isShowing = true;
+            OnShowCompleted?.Invoke();
+        }
+        catch (OperationCanceledException)
+        {
+            // 취소된 경우 안전하게 처리
+            Debug.Log("[UIAnimation] Show 애니메이션이 취소되었습니다.");
+        }
     }
 
     /// <summary>
@@ -104,15 +139,23 @@ public class UIAnimation : MonoBehaviour
     /// </summary>
     public async UniTask Hide(bool deactivate = true)
     {
-        await PlayAnimation(false);
-
-        if (deactivate)
+        try
         {
-            gameObject.SetActive(false);
-        }
+            await PlayAnimation(false);
 
-        isShowing = false;
-        OnHideCompleted?.Invoke();
+            if (deactivate)
+            {
+                gameObject.SetActive(false);
+            }
+
+            isShowing = false;
+            OnHideCompleted?.Invoke();
+        }
+        catch (OperationCanceledException)
+        {
+            // 취소된 경우 안전하게 처리
+            Debug.Log("[UIAnimation] Hide 애니메이션이 취소되었습니다.");
+        }
     }
 
     /// <summary>
@@ -131,6 +174,14 @@ public class UIAnimation : MonoBehaviour
     /// </summary>
     private async UniTask PlayAnimation(bool show)
     {
+        if (rectTransform == null)
+        {
+            Debug.LogWarning("[UIAnimation] rectTransform이 null입니다. 애니메이션을 건너뜁니다.");
+            return;
+        }
+
+        var ct = cancellationTokenSource.Token;
+
         currentSequence?.Kill();
         currentSequence = DOTween.Sequence();
         currentSequence.SetUpdate(true); // 타임스케일 무시
@@ -164,7 +215,7 @@ public class UIAnimation : MonoBehaviour
             currentSequence = currentSequence.Join(canvasGroup.DOFade(targetAlpha, duration).SetEase(easeType).SetUpdate(true));
         }
 
-        await currentSequence.AsyncWaitForCompletion().AsUniTask();
+        await currentSequence.AsyncWaitForCompletion().AsUniTask().AttachExternalCancellation(ct);
     }
 
     /// <summary>
@@ -172,6 +223,12 @@ public class UIAnimation : MonoBehaviour
     /// </summary>
     private void SetVisualState(bool visible)
     {
+        if (rectTransform == null)
+        {
+            Debug.LogWarning("[UIAnimation] rectTransform이 null입니다. 초기화를 건너뜁니다.");
+            return;
+        }
+
         if (useScale)
             rectTransform.localScale = visible ? scaleVisible : scaleHidden;
 

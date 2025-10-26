@@ -476,6 +476,10 @@ MonoBehaviour:
   attackAnimationDuration: 1
   sightDelay: 1
   resultDelay: 1
+  hitSfx:
+    ID: 1073741840
+    _sourceAsset: {fileID: 11400000, guid: 73ea567389bac114aac405527c5c5822, type: 2}
+    <DebugObject>k__BackingField: {fileID: 8352798196460171405}
 --- !u!114 &7110115363127557911
 MonoBehaviour:
   m_ObjectHideFlags: 0
