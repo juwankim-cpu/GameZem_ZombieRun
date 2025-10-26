@@ -52,7 +52,12 @@ MonoBehaviour:
   enemyViewer: {fileID: 1239050339482164529}
   enemyLeftSightSystem: {fileID: 738346367022879284}
   enemyRightSightSystem: {fileID: 8469784971507551538}
-  isAttackPlayer: 0
+  isAttackPlayer:
+    _usage: 0
+    _value: 0
+    _constant: {fileID: 0}
+    _variable: {fileID: 0}
+    _variableInstancer: {fileID: 0}
   slotIndex: 0
   animator: {fileID: 2755068589011711988}
   attackAnimationDuration: 1
@@ -160,7 +165,7 @@ MonoBehaviour:
   maxDistance: 7.3
   leftAngle: -15
   rightAngle: 15
-  sightColor: {r: 0.98057336, g: 1, b: 0.63207537, a: 0.35686275}
+  sightColor: {r: 0.83137256, g: 0.2627451, b: 0.35686275, a: 0.35686275}
   blendMode: 1
   useEmission: 0
   emissionColor: {r: 1, g: 0, b: 0, a: 1}
@@ -301,8 +306,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: -1639988957
+  m_SortingLayer: -3
   m_SortingOrder: 0
   m_Sprite: {fileID: 8611073286929410398, guid: de6dbf0fe63544f5b80a6931c00c5ab9, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -454,7 +459,7 @@ MonoBehaviour:
   maxDistance: 7.3
   leftAngle: -15
   rightAngle: 15
-  sightColor: {r: 0.98057336, g: 1, b: 0.63207537, a: 0.35686275}
+  sightColor: {r: 0.83137256, g: 0.2627451, b: 0.35686275, a: 0.35686275}
   blendMode: 1
   useEmission: 0
   emissionColor: {r: 1, g: 0, b: 0, a: 1}

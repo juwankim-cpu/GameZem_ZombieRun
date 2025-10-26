@@ -52,7 +52,7 @@ MonoBehaviour:
   maxDistance: 7.3
   leftAngle: -15
   rightAngle: 15
-  sightColor: {r: 0.98057336, g: 1, b: 0.63207537, a: 0.35686275}
+  sightColor: {r: 0.33333334, g: 0.3137255, b: 0.88235295, a: 0.35686275}
   blendMode: 1
   useEmission: 0
   emissionColor: {r: 1, g: 0, b: 0, a: 1}
@@ -60,7 +60,7 @@ MonoBehaviour:
   obstacleLayer:
     serializedVersion: 2
     m_Bits: 2147483648
-  shadowLength: 2
+  shadowLength: 5
   useClipper2: 1
   sortingLayerName: Default
   sortingOrder: 6
@@ -202,7 +202,7 @@ MonoBehaviour:
   maxDistance: 7.3
   leftAngle: -15
   rightAngle: 15
-  sightColor: {r: 0.98057336, g: 1, b: 0.63207537, a: 0.35686275}
+  sightColor: {r: 0.33333334, g: 0.3137255, b: 0.88235295, a: 0.35686275}
   blendMode: 1
   useEmission: 0
   emissionColor: {r: 1, g: 0, b: 0, a: 1}
@@ -210,7 +210,7 @@ MonoBehaviour:
   obstacleLayer:
     serializedVersion: 2
     m_Bits: 2147483648
-  shadowLength: 2
+  shadowLength: 5
   useClipper2: 1
   sortingLayerName: Default
   sortingOrder: 6
@@ -377,8 +377,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: -1639988957
+  m_SortingLayer: -3
   m_SortingOrder: 0
   m_Sprite: {fileID: 7126289656078739026, guid: 950f79e8dcde444e296f68433e28280d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -465,7 +465,12 @@ MonoBehaviour:
   enemyViewer: {fileID: 7110115363127557911}
   enemyLeftSightSystem: {fileID: 6131635151580939240}
   enemyRightSightSystem: {fileID: 7844734266137711219}
-  isAttackPlayer: 0
+  isAttackPlayer:
+    _usage: 0
+    _value: 0
+    _constant: {fileID: 0}
+    _variable: {fileID: 0}
+    _variableInstancer: {fileID: 0}
   slotIndex: 0
   animator: {fileID: 1054097434792754837}
   attackAnimationDuration: 1

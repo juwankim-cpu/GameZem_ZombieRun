@@ -84,7 +84,11 @@ public class BackgroundObjectMover : MonoBehaviour
     void Update()
     {
         // 모든 활성 오브젝트 이동
-        MoveObjects();
+        if (!GameStatus.sitDown)
+        {
+            MoveObjects();
+
+        }
 
         // 화면 밖으로 나간 오브젝트 제거
         CheckAndDespawnObjects();

@@ -279,6 +279,18 @@ PrefabInstance:
       propertyPath: m_SizeDelta.x
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6836054627296527931, guid: fad16afcc298c01439a2ff40a7c82d46, type: 3}
+      propertyPath: sortingLayerName
+      value: Map
+      objectReference: {fileID: 0}
+    - target: {fileID: 7166678403689681455, guid: fad16afcc298c01439a2ff40a7c82d46, type: 3}
+      propertyPath: sortingLayerName
+      value: Map
+      objectReference: {fileID: 0}
+    - target: {fileID: 7571826609627211594, guid: fad16afcc298c01439a2ff40a7c82d46, type: 3}
+      propertyPath: sortingLayerName
+      value: MAp
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: 2370976753462772629, guid: fad16afcc298c01439a2ff40a7c82d46, type: 3}

@@ -53,7 +53,10 @@ namespace ZombieRun.Adohi.Enemy
 
                     if (stage.Value >= 3)
                     {
-
+                        var enemy = Instantiate(enemiePrefabs[Random.Range(0, enemiePrefabs.Count)], spawnPoints[randomIndex].position, spawnPoints[randomIndex].rotation);
+                        enemy.slotIndex = randomIndex;
+                        isLocationAllocated[randomIndex] = true;
+                        enemy.DoActionAsync().Forget();
                     }
                     else
                     {

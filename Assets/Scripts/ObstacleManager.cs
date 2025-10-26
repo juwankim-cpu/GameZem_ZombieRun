@@ -2,23 +2,27 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections;
 using UnityEngine.UI;
+using System.Collections.Generic;
+using UnityAtoms.BaseAtoms;
+using ZombieRun.Adohi.GameSystem;
 public class ObstacleManager : MonoBehaviour
 {
     public static ObstacleManager Instance;
     public GameObject[] obstaclePrefabs;
-    
-    
+
+
 
     public MovingDistance movingDistance;
-   
-    
+
+
     public float minSpeed = 3.0f; // 최소 속도
     public float maxSpeed = 7.0f; // 최대 속도
-    
-    public float obstacleSpawnInterval = 2.0f; 
-    
+
+    public float minObstacleSpawnInterval = 2.0f;
+    public float maxObstacleSpawnInterval = 3.0f;
+
     // ⭐️ Y축 랜덤 범위 변수를 추가합니다.
-    public float minYPosition = -2.0f; 
+    public float minYPosition = -2.0f;
     public float maxYPosition = 2.0f;
 
     private Transform playerTransform;
@@ -39,7 +43,7 @@ public class ObstacleManager : MonoBehaviour
         //     // 예: "123 미터" -> ["123", "미터"]
         //     goals = goalDistance.text.Split(' ');
         //     // goals[0]에 "123"이 들어갑니다.
-            
+
         //     // 디버그 확인 (선택 사항)
         //     if (goals.Length > 0)
         //     {
@@ -52,9 +56,9 @@ public class ObstacleManager : MonoBehaviour
         //     // 오류 방지를 위해 임시 값 설정 (선택 사항)
         //     goals = new string[] { "0", "미터" }; 
         // }
-        
-        
-        
+
+
+
         CharactorMove player = FindObjectOfType<CharactorMove>();
         if (player != null)
         {
@@ -64,24 +68,22 @@ public class ObstacleManager : MonoBehaviour
         {
             Debug.LogError("CharactorMove 컴포넌트를 가진 플레이어 오브젝트를 찾을 수 없습니다! 장애물 생성 위치가 고정됩니다.");
         }
-        GameObject.Find("Obstacle").SetActive(false);
+        //GameObject.Find("Obstacle").SetActive(false);
         StartCoroutine(SpawnObstaclesCoroutine());
     }
 
-        // ⭐️ 장애물 생성 로직을 담당하는 코루틴입니다.
+    // ⭐️ 장애물 생성 로직을 담당하는 코루틴입니다.
     IEnumerator SpawnObstaclesCoroutine()
     {
         // 씬 로드가 완료될 때까지 대기
-        yield return null; 
+        yield return null;
 
         // 씬이 바뀌어도 계속 실행되도록 무한 루프 설정
         while (true)
         {
-            if (GameStatus.sitDown)
-            {
-                yield return null; // 한 프레임 대기 (CPU 부하 방지)
-                continue; // 아래 생성 로직을 건너뛰고 루프 처음으로 돌아가 다시 sitDown 상태를 확인합니다.
-            }
+
+            var obstacleSpawnInterval = Random.Range(minObstacleSpawnInterval, maxObstacleSpawnInterval);
+            yield return new WaitForSeconds(obstacleSpawnInterval);
             // // ⭐️ 먼저 정해진 시간 간격만큼 대기합니다.
             // yield return new WaitForSeconds(obstacleSpawnInterval); 
             // int currentGoal = 0;
@@ -101,25 +103,26 @@ public class ObstacleManager : MonoBehaviour
             // }
 
             // ⭐️ currentGoal 변수를 사용하여 스테이지를 판단합니다.
-            if (movingDistance.currentDistance < 150 )
+            if (GameManager.Instance.currentStage.Value == 0)
             {
                 // Stage1에서 2개의 장애물 생성
                 SpawnObstacle(obstaclePrefabs[0]);
-                
+
             }
-             if (150 <= movingDistance.currentDistance && movingDistance.currentDistance < 300)
+            if (GameManager.Instance.currentStage.Value == 1)
             {
                 // Stage2에서 2개의 장애물 생성
                 SpawnObstacle(obstaclePrefabs[1]);
-                
+
             }
-            if (300 <= movingDistance.currentDistance && movingDistance.currentDistance < 450)
+            if (GameManager.Instance.currentStage.Value == 2)
             {
                 // Stage3에서 1개의 장애물 생성
                 SpawnObstacle(obstaclePrefabs[2]);
             }
-            if (movingDistance.currentDistance >= 450)
-                SpawnObstacle(obstaclePrefabs[obstaclePrefabs.Length -1]);
+            if (GameManager.Instance.currentStage.Value == 3)
+                SpawnObstacle(obstaclePrefabs[Random.Range(0, obstaclePrefabs.Length)]);
+
         }
     }
 
@@ -130,6 +133,16 @@ public class ObstacleManager : MonoBehaviour
 
         // 1. Y축 위치와 속도를 랜덤으로 결정합니다.
         float randomY = Random.Range(minYPosition, maxYPosition);
+
+
+        if (!GameManager.Instance.IsPlaying)
+        {
+            while (randomY < maxYPosition - 0.5f && randomY > minYPosition + 0.5f)
+            {
+                randomY = Random.Range(minYPosition, maxYPosition);
+            }
+
+        }
         float randomSpeed = Random.Range(minSpeed, maxSpeed);
 
         // ⭐️ 변경: 장애물이 생성될 X축 위치를 캐릭터 위치에 기반하여 계산
@@ -137,12 +150,12 @@ public class ObstacleManager : MonoBehaviour
         if (playerTransform != null)
         {
             // 캐릭터의 현재 X 위치 + 오프셋 (캐릭터가 이동해도 X축 위치를 따라감)
-            spawnX = playerTransform.position.x + spawnXOffset; 
+            spawnX = spawnXOffset;
         }
         else
         {
             // 캐릭터를 찾지 못했으면 이전의 고정된 X 위치를 사용
-            spawnX = 8.86f; 
+            spawnX = 8.86f;
             Debug.LogWarning("플레이어 Transform을 찾을 수 없어 X=8.86f에 생성합니다.");
         }
 
@@ -151,14 +164,14 @@ public class ObstacleManager : MonoBehaviour
         var obstacle = Instantiate(prefab);
 
         // 3. ⭐️ 초기 위치 설정: (spawnX, randomY, 0)
-        obstacle.transform.position = new Vector3(spawnX, randomY, 0f); 
+        obstacle.transform.position = new Vector3(spawnX, randomY, 0f);
 
         // 4. 이동 및 파괴를 위한 컴포넌트 추가
         ObstacleMover mover = obstacle.AddComponent<ObstacleMover>();
-        
+
         // 5. 랜덤으로 결정된 속도를 전달합니다.
         mover.moveSpeed = randomSpeed;
     }
 
-    
+
 }

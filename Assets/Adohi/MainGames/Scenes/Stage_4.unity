@@ -272,9 +272,29 @@ PrefabInstance:
       propertyPath: nextScenePath
       value: Stage_1
       objectReference: {fileID: 0}
+    - target: {fileID: 1637715539176431280, guid: 3f48d703faf90034c952e2db45798a74, type: 3}
+      propertyPath: sortingLayerName
+      value: Foreground
+      objectReference: {fileID: 0}
+    - target: {fileID: 2037416989658235135, guid: 3f48d703faf90034c952e2db45798a74, type: 3}
+      propertyPath: sortingLayerName
+      value: Map
+      objectReference: {fileID: 0}
+    - target: {fileID: 3137980539842994574, guid: 3f48d703faf90034c952e2db45798a74, type: 3}
+      propertyPath: sortingLayerName
+      value: Map
+      objectReference: {fileID: 0}
+    - target: {fileID: 4039015935173436143, guid: 3f48d703faf90034c952e2db45798a74, type: 3}
+      propertyPath: sortingLayerName
+      value: Map
+      objectReference: {fileID: 0}
     - target: {fileID: 4267291105217739615, guid: 3f48d703faf90034c952e2db45798a74, type: 3}
       propertyPath: m_Name
       value: GameManager_4 Variant
+      objectReference: {fileID: 0}
+    - target: {fileID: 5128615448057251219, guid: 3f48d703faf90034c952e2db45798a74, type: 3}
+      propertyPath: sortingLayerName
+      value: Map
       objectReference: {fileID: 0}
     - target: {fileID: 8115720141653594172, guid: 3f48d703faf90034c952e2db45798a74, type: 3}
       propertyPath: m_LocalPosition.x

@@ -171,6 +171,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: GameManager_3 Variant
       objectReference: {fileID: 0}
+    - target: {fileID: 5280431137742978353, guid: c0a40a0f107636e44be5b10e4a264348, type: 3}
+      propertyPath: sortingLayerName
+      value: Map
+      objectReference: {fileID: 0}
+    - target: {fileID: 6376809817543057447, guid: c0a40a0f107636e44be5b10e4a264348, type: 3}
+      propertyPath: sortingLayerName
+      value: Map
+      objectReference: {fileID: 0}
     - target: {fileID: 7331534743016917501, guid: c0a40a0f107636e44be5b10e4a264348, type: 3}
       propertyPath: nextScene
       value: 
@@ -178,6 +186,10 @@ PrefabInstance:
     - target: {fileID: 7331534743016917501, guid: c0a40a0f107636e44be5b10e4a264348, type: 3}
       propertyPath: nextScenePath
       value: Stage_4
+      objectReference: {fileID: 0}
+    - target: {fileID: 8049333206905930070, guid: c0a40a0f107636e44be5b10e4a264348, type: 3}
+      propertyPath: sortingLayerName
+      value: Map
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

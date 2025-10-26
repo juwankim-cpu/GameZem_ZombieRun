@@ -4,6 +4,7 @@ using Pixelplacement;
 using UnityAtoms.BaseAtoms;
 using UnityEngine;
 using UnityEngine.Events;
+using ZombieRun.Adohi.GameSystem;
 
 
 namespace ZombieRun.Adohi.Enemy
@@ -34,9 +35,21 @@ namespace ZombieRun.Adohi.Enemy
 
         }
 
+        public void StartSpawn()
+        {
+            enemySpawner.StartSpawnAsync().Forget();
+        }
+
         float CalculateCurrentDamage()
         {
-            return 5f;
+            return 20f * GameManager.Instance.difficulty;
+        }
+
+
+        public void GetHit()
+        {
+            var damage = CalculateCurrentDamage();
+            GameManager.Instance.GetHit(CalculateCurrentDamage());
         }
 
     }

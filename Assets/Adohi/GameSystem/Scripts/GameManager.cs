@@ -1,19 +1,20 @@
 using System.Collections.Generic;
 using com.cyborgAssets.inspectorButtonPro;
 using Cysharp.Threading.Tasks;
+using Pixelplacement;
 using TMPro;
 using TMPro.Examples;
 using UniRx;
-using Unity.VisualScripting;
 using UnityAtoms.BaseAtoms;
 using UnityEngine;
+using ZombieRun.Adohi.Enemy;
 using ZombieRun.Adohi.Ranking;
 using ZombieRun.Adohi.SceneManagement;
 using ZombieRun.Adohi.Titles;
 
 namespace ZombieRun.Adohi.GameSystem
 {
-    public class GameManager : MonoBehaviour
+    public class GameManager : Singleton<GameManager>
     {
 
         public FloatReference stageClearScoreConfig;
@@ -46,14 +47,54 @@ namespace ZombieRun.Adohi.GameSystem
         private bool isSceneTransition = false;
         public SceneManagerWithTransition sceneManagerWithTransition;
 
+        [Header("Charactter")]
+        public CharactorMove character;
+
+        [Header("Enemy")]
+        public EnemyManager enemyManager;
+
+        [Header("Difficulty")]
+        public float scorePerSecond = 1f;
+        public float speedMultiply = 1f;
+
+        [Header("Camera Zoom")]
+        public int zoomStartPPU = 100;
+        public int zoomEndPPU = 50;
+        public float zoomDuration = 2f;
+
+        private UnityEngine.U2D.PixelPerfectCamera pixelPerfectCamera;
+
+        public bool IsTitleShowing;
+
+        public bool IsPlaying => !IsTitleShowing;
+
+        public float difficulty = 1f;
+        public float healthDecreasePerSecond = 1f;
+
+        private bool isEnd;
+
         void Awake()
         {
             if (screenUI != null) screenUI.SetActive(false);
+
+            // 메인 카메라에서 PixelPerfectCamera 컴포넌트 가져오기
+            if (Camera.main != null)
+            {
+                pixelPerfectCamera = Camera.main.GetComponent<UnityEngine.U2D.PixelPerfectCamera>();
+                if (pixelPerfectCamera == null)
+                {
+                    Debug.LogWarning("메인 카메라에 PixelPerfectCamera 컴포넌트가 없습니다!");
+                }
+            }
 
             if (isFirstStage)
             {
                 currentHealth.Value = 100f;
                 currentBoost.Value = 0f;
+                IsTitleShowing = true;
+                character.GetComponent<Animator>().SetTrigger("IsTitleStart");
+
+
             }
         }
 
@@ -86,6 +127,19 @@ namespace ZombieRun.Adohi.GameSystem
         public void Update()
         {
             timeFromStart += Time.deltaTime;
+
+            if (IsPlaying && !GameStatus.sitDown)
+            {
+                currentScore.Value += scorePerSecond * Time.deltaTime * speedMultiply;
+            }
+
+            if (IsPlaying)
+            {
+
+                currentHealth.Value -= healthDecreasePerSecond * difficulty * Time.deltaTime;
+            }
+
+
         }
 
         public async UniTask PlayAsync()
@@ -93,6 +147,7 @@ namespace ZombieRun.Adohi.GameSystem
             if (isFirstStage)
             {
                 await TitleStartAsync();
+                character.GetComponent<Animator>().SetTrigger("IsTitleEnd");
             }
 
             StageStart();
@@ -107,8 +162,10 @@ namespace ZombieRun.Adohi.GameSystem
         {
             if (titleMover != null)
             {
+                await UniTask.Delay(2000);
                 await UniTask.WaitUntil(() => Input.GetKeyDown(titleStartKey));
                 await titleMover.EndAsync();
+                IsTitleShowing = false;
             }
 
 
@@ -116,15 +173,53 @@ namespace ZombieRun.Adohi.GameSystem
 
         public void StageStart()
         {
+            if (screenUI != null) screenUI.SetActive(true);
+
             if (isFirstStage)
             {
 
                 timeFromStart = 0f;
                 currentScore.Value = 0f;
+                currentHealth.Value = 100f;
+                currentBoost.Value = 0f;
+
             }
 
-            if (screenUI != null) screenUI.SetActive(true);
 
+            enemyManager.StartSpawn();
+
+            // 게임 시작 시 줌아웃 효과
+            ZoomCamera(zoomStartPPU, zoomEndPPU, zoomDuration).Forget();
+        }
+
+        /// <summary>
+        /// 카메라 PPU를 a에서 b까지 일정 시간 동안 변화
+        /// </summary>
+        public async UniTask ZoomCamera(int startPPU, int endPPU, float duration)
+        {
+            if (pixelPerfectCamera == null)
+            {
+                Debug.LogWarning("PixelPerfectCamera가 설정되지 않았습니다!");
+                return;
+            }
+
+            float elapsed = 0f;
+            pixelPerfectCamera.assetsPPU = startPPU;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = elapsed / duration;
+
+                // Ease Out Quad 효과
+                t = 1f - (1f - t) * (1f - t);
+
+                pixelPerfectCamera.assetsPPU = (int)Mathf.Lerp(startPPU, endPPU, t);
+
+                await UniTask.Yield();
+            }
+
+            pixelPerfectCamera.assetsPPU = endPPU;
         }
 
         [ProButton]
@@ -139,6 +234,17 @@ namespace ZombieRun.Adohi.GameSystem
             sceneManagerWithTransition.LoadNextScene();
 
 
+        }
+
+        public void GetHit(float damage)
+        {
+            currentHealth.Value -= damage;
+            if (currentHealth.Value <= 0f && !isEnd)
+            {
+                isEnd = true;
+
+                GameEnd();
+            }
         }
 
         public void GameEnd()

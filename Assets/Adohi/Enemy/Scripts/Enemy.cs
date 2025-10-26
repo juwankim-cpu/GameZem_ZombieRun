@@ -1,7 +1,10 @@
 using com.cyborgAssets.inspectorButtonPro;
 using Cysharp.Threading.Tasks;
+using UniRx;
+using UnityAtoms.BaseAtoms;
 using UnityEngine;
 using ZombieRun.Adohi;
+using ZombieRun.Adohi.GameSystem;
 
 namespace ZombieRun.Adohi.Enemy
 {
@@ -19,7 +22,7 @@ namespace ZombieRun.Adohi.Enemy
         public EnemySightSystem enemyLeftSightSystem;
         public EnemySightSystem enemyRightSightSystem;
 
-        public bool isAttackPlayer = false;
+        public BoolReference isAttackPlayer;
 
         public int slotIndex;
 
@@ -36,6 +39,25 @@ namespace ZombieRun.Adohi.Enemy
         {
             enemyLeftSightSystem.Initialize(this);
             enemyRightSightSystem.Initialize(this);
+
+            if (enemyType == EnemyType.Grandma) isAttackPlayer.Value = true;
+        }
+
+        void Start()
+        {
+            isAttackPlayer.ObserveEveryValueChanged(x => x.Value).Subscribe(x =>
+            {
+                if (x)
+                {
+                    Debug.Log("Attack Player");
+                    if (enemyType != EnemyType.Grandma)
+                    {
+                        GameManager.Instance.character.GetHit();
+                        EnemyManager.Instance.GetHit();
+
+                    }
+                }
+            });
         }
 
         [ProButton]
@@ -53,6 +75,13 @@ namespace ZombieRun.Adohi.Enemy
             if (isAttackPlayer)
             {
                 animator.SetTrigger("IsSuccess");
+                if (enemyType == EnemyType.Grandma)
+                {
+                    GameManager.Instance.character.GetHit();
+
+                    EnemyManager.Instance.GetHit();
+                }
+
             }
             else
             {

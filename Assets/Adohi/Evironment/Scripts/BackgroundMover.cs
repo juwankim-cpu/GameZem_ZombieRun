@@ -82,11 +82,16 @@ namespace ZombieRun.Adohi.Evironment
         {
             if (backgroundInstances.Count == 0) return;
 
-            // 모든 배경을 왼쪽으로 이동
-            foreach (var bgInstance in backgroundInstances)
+
+            if (!GameStatus.sitDown)
             {
-                bgInstance.gameObject.transform.position += Vector3.left * moveSpeed * Time.deltaTime;
+                foreach (var bgInstance in backgroundInstances)
+                {
+                    bgInstance.gameObject.transform.position += Vector3.left * moveSpeed * Time.deltaTime;
+                }
             }
+            // 모든 배경을 왼쪽으로 이동
+
 
             // 가장 왼쪽 배경이 화면 밖으로 나가면 오른쪽 끝으로 이동
             CheckAndRepositionBackgrounds();

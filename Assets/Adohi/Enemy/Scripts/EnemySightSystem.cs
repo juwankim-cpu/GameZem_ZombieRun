@@ -134,48 +134,70 @@ namespace ZombieRun.Adohi.Enemy
         {
             CreateRectangle();
 
-            if (isAttacking && !enemy.isAttackPlayer)
+            if (isAttacking)
             {
                 switch (enemy.enemyType)
                 {
                     case EnemyType.Soilder:
+                        if (enemy.isAttackPlayer.Value) break;
                         //인비저블 조건으로 다 바꿔야함
-                        if (IsVisible(EnemyManager.Instance.player.Value.transform.position))
+                        if (IsInSight(EnemyManager.Instance.player.Value.transform.position))
                         {
-                            Debug.Log("Player is visible");
-                            enemy.isAttackPlayer = true;
-                        }
-                        else
-                        {
-                            Debug.Log("Player is invisible");
+                            Debug.Log("a");
+                            if (!IsInShadow(EnemyManager.Instance.player.Value.transform.position))
+                            {
+                                enemy.isAttackPlayer.Value = true;
+                                Debug.Log("b");
+
+                            }
+                            else
+                            {
+                                if (!GameStatus.sitDown)
+                                    enemy.isAttackPlayer.Value = true;
+
+                                Debug.Log("c" + GameStatus.sitDown);
+                            }
                         }
                         break;
                     case EnemyType.Grandma:
+                        if (!enemy.isAttackPlayer.Value) break;
                         //인비저블 조건으로 다 바꿔야함
-                        if (!IsVisible(EnemyManager.Instance.player.Value.transform.position))
+                        if (!IsInSight(EnemyManager.Instance.player.Value.transform.position))
                         {
-                            Debug.Log("Player is visible");
-                            enemy.isAttackPlayer = true;
+
+                            //enemy.isAttackPlayer.Value = true;
                         }
                         else
                         {
-                            Debug.Log("Player is invisible");
+                            if (IsInShadow(EnemyManager.Instance.player.Value.transform.position))
+                            {
+
+                                //enemy.isAttackPlayer.Value = true;
+                            }
+                            else if (GameStatus.hearted)
+                            {
+
+                                enemy.isAttackPlayer.Value = false;
+                            }
                         }
+
                         break;
                     case EnemyType.Teacher:
+                        if (enemy.isAttackPlayer.Value) break;
+
                         //인비저블 조건으로 다 바꿔야함
-                        if (IsVisible(EnemyManager.Instance.player.Value.transform.position))
+                        if (IsInSight(EnemyManager.Instance.player.Value.transform.position))
                         {
-                            Debug.Log("Player is visible");
-                            enemy.isAttackPlayer = true;
-                        }
-                        else
-                        {
-                            Debug.Log("Player is invisible");
+                            if (!GameStatus.study)
+                            {
+                                enemy.isAttackPlayer.Value = true;
+
+                            }
                         }
                         break;
                 }
             }
+
         }
 
         void OnDestroy()
@@ -276,7 +298,6 @@ namespace ZombieRun.Adohi.Enemy
             if (shader == null)
             {
                 shader = Shader.Find("Sprites/Default");
-                Debug.LogWarning("Custom/BlendModeShader를 찾을 수 없습니다. Sprites/Default를 사용합니다.");
             }
 
             return shader;
@@ -314,8 +335,6 @@ namespace ZombieRun.Adohi.Enemy
 
             material.SetInt("_ZWrite", 0);
             material.renderQueue = 3000;
-
-            Debug.Log($"블렌드 모드 적용: {mode}, 셰이더: {material.shader.name}, SrcBlend: {material.GetInt("_SrcBlend")}, DstBlend: {material.GetInt("_DstBlend")}");
         }
 
         // 블렌드 모드 변경 (런타임)
@@ -446,7 +465,6 @@ namespace ZombieRun.Adohi.Enemy
                     // 박스가 원점보다 아래에 있는지 확인 (시야 범위 내에 있어야 함)
                     if (boxLocalCenter.y >= origin.y)
                     {
-                        Debug.LogWarning($"박스가 시야 원점보다 위에 있음: {col.name}, boxY={boxLocalCenter.y}, originY={origin.y}");
                         continue; // 원점보다 위는 무시
                     }
 
@@ -494,8 +512,6 @@ namespace ZombieRun.Adohi.Enemy
                     shadow.bottomRight = origin + dirRight * shadowEndDistRight;
 
                     shadowTrapezoids.Add(shadow);
-
-                    Debug.Log($"박스: {col.name}, 로컬중심: {boxLocalCenter}, 그림자: TL={shadow.topLeft}, TR={shadow.topRight}, BL={shadow.bottomLeft}, BR={shadow.bottomRight}");
                 }
             }
 
@@ -520,33 +536,21 @@ namespace ZombieRun.Adohi.Enemy
             new PointD(topRight.x, topRight.y)
         };
 
-            Debug.Log($"[시야] TL({topLeft.x:F2},{topLeft.y:F2}) BL({bottomLeft.x:F2},{bottomLeft.y:F2}) BR({bottomRight.x:F2},{bottomRight.y:F2}) TR({topRight.x:F2},{topRight.y:F2})");
-
             // 2. 그림자 폴리곤들
             PathsD shadowList = new PathsD();
-            int shadowIdx = 0;
             foreach (var s in shadows)
             {
-                // 실제 y 좌표 기준으로 정렬 (위에서 아래로: y 큰 값 -> 작은 값)
-                // topLeft/topRight가 실제로는 박스 위치 (y 작음)
-                // bottomLeft/bottomRight가 그림자 끝 (y 더 작음)
-                // 그래서 순서를 바꿔야 함
-                Debug.Log($"[그림자#{shadowIdx}] TL({s.topLeft.x:F2},{s.topLeft.y:F2}) TR({s.topRight.x:F2},{s.topRight.y:F2}) BL({s.bottomLeft.x:F2},{s.bottomLeft.y:F2}) BR({s.bottomRight.x:F2},{s.bottomRight.y:F2})");
-
                 shadowList.Add(new PathD {
                 new PointD(s.topLeft.x, s.topLeft.y),
                 new PointD(s.topRight.x, s.topRight.y),
                 new PointD(s.bottomRight.x, s.bottomRight.y),
                 new PointD(s.bottomLeft.x, s.bottomLeft.y)
             });
-                shadowIdx++;
             }
 
             // 3. 차집합 연산
             PathsD result = Clipper.Difference(new PathsD { sight }, shadowList, FillRule.NonZero);
             if (result.Count == 0) result.Add(sight);
-
-            Debug.Log($"차집합 결과: {result.Count}개 경로");
 
             // 4. 외곽 폴리곤들과 구멍들 분리 및 그룹화
             List<PathD> outers = new List<PathD>();
@@ -557,22 +561,18 @@ namespace ZombieRun.Adohi.Enemy
                 if (path.Count < 3) continue;
 
                 double area = Clipper.Area(path);
-                Debug.Log($"경로: {path.Count}꼭지점, Area={area:F4}");
 
                 if (area > 0)
                 {
                     outers.Add(path);
-                    Debug.Log("  -> 외곽 폴리곤");
                 }
                 else
                 {
                     holes.Add(path);
-                    Debug.Log("  -> 구멍 폴리곤");
                 }
             }
 
             // 5. 각 외곽 폴리곤에 대해 메시 생성
-            Debug.Log($"총 {outers.Count}개의 독립된 폴리곤 발견");
 
             foreach (var outer in outers)
             {
@@ -581,7 +581,6 @@ namespace ZombieRun.Adohi.Enemy
                 if (holes.Count == 0)
                 {
                     // 구멍 없음 - 단순 삼각분할
-                    Debug.Log($"폴리곤 삼각분할 (구멍 없음): {outer.Count}꼭지점");
                     Vector2[] points2D = new Vector2[outer.Count];
                     for (int i = 0; i < outer.Count; i++)
                         points2D[i] = new Vector2((float)outer[i].x, (float)outer[i].y);
@@ -601,8 +600,6 @@ namespace ZombieRun.Adohi.Enemy
 
                     foreach (var idx in tris)
                         triangles.Add(vStart + idx);
-
-                    Debug.Log($"  -> {tris.Length / 3}개 삼각형");
                 }
                 else
                 {
@@ -610,13 +607,11 @@ namespace ZombieRun.Adohi.Enemy
                     if (outers.Count == 1 || outer == outers[0])
                     {
                         // 구멍 있음 - LibTessDotNet 사용
-                        Debug.Log($"폴리곤 삼각분할 (구멍 {holes.Count}개 포함)");
                         TriangulateWithLibTess(outer, holes, vertices, triangles, uvs);
                     }
                     else
                     {
                         // 나머지 폴리곤은 구멍 없이 처리
-                        Debug.Log($"폴리곤 삼각분할 (구멍 없이): {outer.Count}꼭지점");
                         Vector2[] points2D = new Vector2[outer.Count];
                         for (int i = 0; i < outer.Count; i++)
                             points2D[i] = new Vector2((float)outer[i].x, (float)outer[i].y);
@@ -635,8 +630,6 @@ namespace ZombieRun.Adohi.Enemy
 
                         foreach (var idx in tris)
                             triangles.Add(vStart + idx);
-
-                        Debug.Log($"  -> {tris.Length / 3}개 삼각형");
                     }
                 }
             }
@@ -692,8 +685,6 @@ namespace ZombieRun.Adohi.Enemy
                 triangles.Add(vStart + tess.Elements[i * 3 + 1]);
                 triangles.Add(vStart + tess.Elements[i * 3 + 2]);
             }
-
-            Debug.Log($"LibTess 완료: {tess.VertexCount}버텍스, {tess.ElementCount}삼각형");
         }
 
         // 사다리꼴의 진짜 원점 계산 (양쪽 변의 연장선이 만나는 점)

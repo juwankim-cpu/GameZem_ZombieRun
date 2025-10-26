@@ -148,8 +148,8 @@ TextureImporter:
         y: 0
         width: 33
         height: 63
-      alignment: 0
-      pivot: {x: 0, y: 0}
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -171,7 +171,7 @@ TextureImporter:
         width: 33
         height: 63
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -193,7 +193,7 @@ TextureImporter:
         width: 33
         height: 63
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -215,7 +215,7 @@ TextureImporter:
         width: 33
         height: 63
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -237,7 +237,7 @@ TextureImporter:
         width: 33
         height: 63
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -259,7 +259,7 @@ TextureImporter:
         width: 33
         height: 63
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -268,6 +268,50 @@ TextureImporter:
       bones: []
       spriteID: 91d76cf7d7b9155489ccceedd73cb4ff
       internalID: -7254382233607389928
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: character_idle 1_0
+      rect:
+        serializedVersion: 2
+        x: 22
+        y: 0
+        width: 176
+        height: 63
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 943efed6d3fa89545a650eeff5365ac5
+      internalID: -1649079882
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: character_idle 1_1
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 198
+        height: 63
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d0221c5283b35d948a469e0556b73570
+      internalID: -2095979116
       vertices: []
       indices: 
       edges: []
@@ -286,6 +330,8 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
+      character_idle 1_0: -1649079882
+      character_idle 1_1: -2095979116
       character_idle_0: -5240138286427330706
       character_idle_1: 382507575425190280
       character_idle_2: 5917505638279905623
