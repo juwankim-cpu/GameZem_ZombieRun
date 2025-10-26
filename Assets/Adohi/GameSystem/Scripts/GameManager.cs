@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Ami.BroAudio;
 using com.cyborgAssets.inspectorButtonPro;
 using Cysharp.Threading.Tasks;
 using Pixelplacement;
@@ -73,6 +74,9 @@ namespace ZombieRun.Adohi.GameSystem
 
         private bool isEnd;
 
+        public SoundID titleBGM;
+        public SoundID stageBGM;
+
         void Awake()
         {
             if (screenUI != null) screenUI.SetActive(false);
@@ -96,6 +100,8 @@ namespace ZombieRun.Adohi.GameSystem
 
 
             }
+
+            Time.timeScale = 1f;
         }
 
         void Start()
@@ -122,6 +128,11 @@ namespace ZombieRun.Adohi.GameSystem
             });
 
             PlayAsync().SafeAsync(this).Forget();
+
+            if (isFirstStage)
+            {
+                BroAudio.Play(titleBGM, 1f).AsBGM();
+            }
         }
 
         public void Update()
@@ -137,6 +148,15 @@ namespace ZombieRun.Adohi.GameSystem
             {
 
                 currentHealth.Value -= healthDecreasePerSecond * difficulty * Time.deltaTime;
+            }
+
+            if (isEnd)
+            {
+                if (Input.GetKeyDown(KeyCode.R))
+                {
+                    Time.timeScale = 1f;
+                    sceneManagerWithTransition.LoadSceneByName("Stage_1");
+                }
             }
 
 
@@ -162,8 +182,10 @@ namespace ZombieRun.Adohi.GameSystem
         {
             if (titleMover != null)
             {
+
                 await UniTask.Delay(2000);
                 await UniTask.WaitUntil(() => Input.GetKeyDown(titleStartKey));
+                BroAudio.Stop(BroAudioType.Music, 1f);
                 await titleMover.EndAsync();
                 IsTitleShowing = false;
             }
@@ -185,7 +207,7 @@ namespace ZombieRun.Adohi.GameSystem
 
             }
 
-
+            BroAudio.Play(stageBGM, 1f).AsBGM();
             enemyManager.StartSpawn();
 
             // 게임 시작 시 줌아웃 효과
@@ -229,6 +251,7 @@ namespace ZombieRun.Adohi.GameSystem
             isSceneTransition = true;
 
             Debug.Log($"스테이지 {currentStage.Value} 클리어! 다음 스테이지로 이동");
+            BroAudio.Stop(BroAudioType.Music, 1f);
             //씬 트랜지션
             //씬 이동
             sceneManagerWithTransition.LoadNextScene();
@@ -241,14 +264,14 @@ namespace ZombieRun.Adohi.GameSystem
             currentHealth.Value -= damage;
             if (currentHealth.Value <= 0f && !isEnd)
             {
-                isEnd = true;
-
                 GameEnd();
             }
         }
 
         public void GameEnd()
         {
+            if (isEnd) return;
+            isEnd = true;
             Time.timeScale = 0f;
             StageEndAsync();
         }

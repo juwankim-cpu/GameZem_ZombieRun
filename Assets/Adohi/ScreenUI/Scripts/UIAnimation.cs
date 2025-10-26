@@ -133,12 +133,13 @@ public class UIAnimation : MonoBehaviour
     {
         currentSequence?.Kill();
         currentSequence = DOTween.Sequence();
+        currentSequence.SetUpdate(true); // 타임스케일 무시
 
         // 스케일
         if (useScale)
         {
             Vector3 targetScale = show ? scaleVisible : scaleHidden;
-            currentSequence = currentSequence.Join(rectTransform.DOScale(targetScale, duration).SetEase(easeType));
+            currentSequence = currentSequence.Join(rectTransform.DOScale(targetScale, duration).SetEase(easeType).SetUpdate(true));
         }
 
         // 포지션
@@ -146,21 +147,21 @@ public class UIAnimation : MonoBehaviour
         {
             Vector2 targetPos = show ? positionVisible : positionHidden;
             Debug.Log($"targetPos: {targetPos}");
-            currentSequence = currentSequence.Join(rectTransform.DOAnchorPos(targetPos, duration).SetEase(easeType));
+            currentSequence = currentSequence.Join(rectTransform.DOAnchorPos(targetPos, duration).SetEase(easeType).SetUpdate(true));
         }
 
         // 회전
         if (useRotation)
         {
             Vector3 targetRot = show ? rotationVisible : rotationHidden;
-            currentSequence = currentSequence.Join(rectTransform.DORotate(targetRot, duration).SetEase(easeType));
+            currentSequence = currentSequence.Join(rectTransform.DORotate(targetRot, duration).SetEase(easeType).SetUpdate(true));
         }
 
         // 페이드
         if (useFade && canvasGroup != null)
         {
             float targetAlpha = show ? fadeVisible : fadeHidden;
-            currentSequence = currentSequence.Join(canvasGroup.DOFade(targetAlpha, duration).SetEase(easeType));
+            currentSequence = currentSequence.Join(canvasGroup.DOFade(targetAlpha, duration).SetEase(easeType).SetUpdate(true));
         }
 
         await currentSequence.AsyncWaitForCompletion().AsUniTask();

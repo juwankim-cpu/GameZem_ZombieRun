@@ -1,3 +1,5 @@
+using System;
+using System.Threading;
 using com.cyborgAssets.inspectorButtonPro;
 using Cysharp.Threading.Tasks;
 using UniRx;
@@ -33,6 +35,7 @@ namespace ZombieRun.Adohi.Enemy
         public float resultDelay = 1f;
 
         private float timesFaster = 1f;
+        private CancellationTokenSource cancellationTokenSource;
 
 
         void Awake()
@@ -41,6 +44,9 @@ namespace ZombieRun.Adohi.Enemy
             enemyRightSightSystem.Initialize(this);
 
             if (enemyType == EnemyType.Grandma) isAttackPlayer.Value = true;
+            
+            // CancellationTokenSource 생성
+            cancellationTokenSource = new CancellationTokenSource();
         }
 
         void Start()
@@ -63,40 +69,61 @@ namespace ZombieRun.Adohi.Enemy
         [ProButton]
         public async UniTask DoActionAsync()
         {
-            await enemyViewer.ShowAsnyc().SafeAsync(this);
-            await enemyViewer.ScaleUpAsync().SafeAsync(this);
-            animator.SetTrigger("IsAttack");
-            await UniTask.Delay((int)(attackAnimationDuration * 1000 / timesFaster));
-            await UniTask.WhenAll(
-                enemyLeftSightSystem.DoSight(sightDelay / timesFaster),
-                enemyRightSightSystem.DoSight(sightDelay / timesFaster)
-            ).SafeAsync(this);
-
-            if (isAttackPlayer)
+            try
             {
-                animator.SetTrigger("IsSuccess");
-                if (enemyType == EnemyType.Grandma)
-                {
-                    GameManager.Instance.character.GetHit();
+                var ct = cancellationTokenSource.Token;
+                
+                await enemyViewer.ShowAsnyc().AttachExternalCancellation(ct);
+                await enemyViewer.ScaleUpAsync().AttachExternalCancellation(ct);
+                
+                if (ct.IsCancellationRequested) return;
+                animator.SetTrigger("IsAttack");
+                
+                await UniTask.Delay((int)(attackAnimationDuration * 1000 / timesFaster), cancellationToken: ct);
+                
+                await UniTask.WhenAll(
+                    enemyLeftSightSystem.DoSight(sightDelay / timesFaster),
+                    enemyRightSightSystem.DoSight(sightDelay / timesFaster)
+                ).AttachExternalCancellation(ct);
 
-                    EnemyManager.Instance.GetHit();
+                if (ct.IsCancellationRequested) return;
+                
+                if (isAttackPlayer)
+                {
+                    animator.SetTrigger("IsSuccess");
+                    if (enemyType == EnemyType.Grandma)
+                    {
+                        GameManager.Instance.character.GetHit();
+                        EnemyManager.Instance.GetHit();
+                    }
+                }
+                else
+                {
+                    animator.SetTrigger("IsFail");
                 }
 
+                await UniTask.Delay((int)(resultDelay * 1000 / timesFaster), cancellationToken: ct);
+                await enemyViewer.ScaleDownAsync().AttachExternalCancellation(ct);
+                await enemyViewer.HideAsync().AttachExternalCancellation(ct);
+
+                if (EnemySpawner.Instance != null)
+                    EnemySpawner.Instance.ReleaseEnemy(this);
+                
+                if (gameObject != null)
+                    Destroy(gameObject);
             }
-            else
+            catch (OperationCanceledException)
             {
-                animator.SetTrigger("IsFail");
+                // 취소된 경우 안전하게 처리
+                Debug.Log($"[Enemy] {enemyType} 액션이 취소되었습니다.");
             }
+        }
 
-            await UniTask.Delay((int)(resultDelay * 1000 / timesFaster));
-            await enemyViewer.ScaleDownAsync().SafeAsync(this);
-
-
-
-            await enemyViewer.HideAsync().SafeAsync(this);
-
-            EnemySpawner.Instance.ReleaseEnemy(this);
-            Destroy(gameObject);
+        void OnDestroy()
+        {
+            // 게임오브젝트 파괴 시 모든 진행 중인 UniTask 취소
+            cancellationTokenSource?.Cancel();
+            cancellationTokenSource?.Dispose();
         }
 
     }

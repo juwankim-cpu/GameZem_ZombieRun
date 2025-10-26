@@ -27,6 +27,12 @@ public class CharactorMove : MonoBehaviour
     [Header("피격 상태 설정")]
     public float hittedDuration = 1f; // 피격 상태 지속 시간 (초)
 
+    [Header("피버 모드 설정")]
+    public float feverDuration = 10f; // 피버 모드 지속 시간 (초)
+    public float feverSpeedMultiplier = 3f; // 피버 모드 속도 배율
+    public bool isFeverMode = false; // 현재 피버 모드 상태인지
+    private float originalMoveSpeed; // 원래 이동 속도 저장
+
     private Camera mainCamera;
     private float cameraTopBound;
     private float cameraBottomBound;
@@ -42,6 +48,7 @@ public class CharactorMove : MonoBehaviour
         p_Animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         initialScale = transform.localScale;
+        originalMoveSpeed = moveSpeed; // 원래 속도 저장
     }
     void Start()
     {
@@ -50,7 +57,7 @@ public class CharactorMove : MonoBehaviour
         mainCamera = Camera.main;
         if (mainCamera == null)
         {
-            mainCamera = FindObjectOfType<Camera>();
+            mainCamera = FindFirstObjectByType<Camera>();
         }
 
         // 카메라 경계 계산
@@ -114,9 +121,62 @@ public class CharactorMove : MonoBehaviour
             GameStatus.study = false;
             p_Animator.SetBool("Study", false);
         }
-    }
-    // 앉기 기능
 
+        // 피버 모드 활성화 (V 키 또는 스페이스바로)
+        if (GameManager.Instance.currentBoost.Value >= 100f && !isFeverMode)
+        {
+            ActivateFeverMode();
+        }
+    }
+
+    // 피버 모드 활성화
+    private void ActivateFeverMode()
+    {
+        if (isFeverMode) return; // 이미 피버 모드 중이면 무시
+
+        // 부스트 소모
+        GameManager.Instance.currentBoost.Value = 0f;
+
+        // 피버 모드 코루틴 시작
+        StartCoroutine(FeverModeCoroutine());
+    }
+
+    // 피버 모드 코루틴
+    private IEnumerator FeverModeCoroutine()
+    {
+        isFeverMode = true;
+        isInvincible = true; // 무적 활성화
+        p_Animator.SetBool("IsFever", true);
+
+        // 이동 속도 증가
+        moveSpeed = originalMoveSpeed * feverSpeedMultiplier;
+
+        // 시각적 효과 (빛나는 효과)
+        Color originalColor = spriteRenderer.color;
+        float elapsed = 0f;
+
+        Debug.Log($"피버 모드 활성화! {feverDuration}초 동안 무적 + 속도 {feverSpeedMultiplier}배!");
+
+        while (elapsed < feverDuration)
+        {
+            // 빛나는 효과 (빠르게 깜빡이며 밝게)
+            float glow = (Mathf.Sin(elapsed * 10f) + 1f) * 0.5f;
+            Color glowColor = Color.Lerp(originalColor, Color.yellow, glow * 0.3f);
+            spriteRenderer.color = glowColor;
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        // 피버 모드 종료
+        isFeverMode = false;
+        isInvincible = false; // 무적 해제
+        moveSpeed = originalMoveSpeed; // 원래 속도로 복구
+        spriteRenderer.color = originalColor; // 원래 색상으로 복구
+        p_Animator.SetBool("IsFever", false);
+
+        Debug.Log("피버 모드 종료!");
+    }
 
     private void Move()
     {
