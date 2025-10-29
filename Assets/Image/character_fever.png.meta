@@ -124,7 +124,7 @@ TextureImporter:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 63
+        width: 64
         height: 79
       alignment: 7
       pivot: {x: 0.5, y: 0}
@@ -144,9 +144,9 @@ TextureImporter:
       name: character_fever_1
       rect:
         serializedVersion: 2
-        x: 63
+        x: 64
         y: 0
-        width: 63
+        width: 64
         height: 79
       alignment: 7
       pivot: {x: 0.5, y: 0}
@@ -166,9 +166,9 @@ TextureImporter:
       name: character_fever_2
       rect:
         serializedVersion: 2
-        x: 126
+        x: 128
         y: 0
-        width: 63
+        width: 64
         height: 79
       alignment: 7
       pivot: {x: 0.5, y: 0}
@@ -188,9 +188,9 @@ TextureImporter:
       name: character_fever_3
       rect:
         serializedVersion: 2
-        x: 189
+        x: 192
         y: 0
-        width: 63
+        width: 64
         height: 79
       alignment: 7
       pivot: {x: 0.5, y: 0}
@@ -210,9 +210,9 @@ TextureImporter:
       name: character_fever_4
       rect:
         serializedVersion: 2
-        x: 251
+        x: 256
         y: 0
-        width: 63
+        width: 64
         height: 79
       alignment: 7
       pivot: {x: 0.5, y: 0}
@@ -232,9 +232,9 @@ TextureImporter:
       name: character_fever_5
       rect:
         serializedVersion: 2
-        x: 315
+        x: 320
         y: 0
-        width: 63
+        width: 64
         height: 79
       alignment: 7
       pivot: {x: 0.5, y: 0}
@@ -244,7 +244,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c5d23c1b14f484b43938f3ba37d06ddf
+      spriteID: 2f05e08cb0d199a4398f5ac4ee456fde
       internalID: -6688479
       vertices: []
       indices: 

@@ -35,7 +35,6 @@ namespace ZombieRun.Adohi.Enemy
         public float sightDelay = 1f;
         public float resultDelay = 1f;
 
-        private float timesFaster = 1f;
         private CancellationTokenSource cancellationTokenSource;
 
         public SoundID hitSfx;
@@ -61,8 +60,7 @@ namespace ZombieRun.Adohi.Enemy
                     Debug.Log("Attack Player");
                     if (enemyType != EnemyType.Grandma)
                     {
-                        GameManager.Instance.character.GetHit();
-                        EnemyManager.Instance.GetHit();
+                        GameManager.Instance.character.GetHit(EnemyManager.Instance.CalculateCurrentDamage());
 
                     }
                 }
@@ -75,9 +73,10 @@ namespace ZombieRun.Adohi.Enemy
             try
             {
                 var ct = cancellationTokenSource.Token;
+                var timesFaster = GameManager.Instance.difficulty;
 
-                await enemyViewer.ShowAsnyc().AttachExternalCancellation(ct);
-                await enemyViewer.ScaleUpAsync().AttachExternalCancellation(ct);
+                await enemyViewer.ShowAsnyc(timesFaster).AttachExternalCancellation(ct);
+                await enemyViewer.ScaleUpAsync(timesFaster).AttachExternalCancellation(ct);
 
                 if (ct.IsCancellationRequested) return;
                 animator.SetTrigger("IsAttack");
@@ -98,8 +97,8 @@ namespace ZombieRun.Adohi.Enemy
                     animator.SetTrigger("IsSuccess");
                     if (enemyType == EnemyType.Grandma)
                     {
-                        GameManager.Instance.character.GetHit();
-                        EnemyManager.Instance.GetHit();
+                        GameManager.Instance.character.GetHit(EnemyManager.Instance.CalculateCurrentDamage());
+
                     }
                 }
                 else
@@ -107,9 +106,11 @@ namespace ZombieRun.Adohi.Enemy
                     animator.SetTrigger("IsFail");
                 }
 
+                BroAudio.Stop(hitSfx);
+
                 await UniTask.Delay((int)(resultDelay * 1000 / timesFaster), cancellationToken: ct);
-                await enemyViewer.ScaleDownAsync().AttachExternalCancellation(ct);
-                await enemyViewer.HideAsync().AttachExternalCancellation(ct);
+                await enemyViewer.ScaleDownAsync(timesFaster).AttachExternalCancellation(ct);
+                await enemyViewer.HideAsync(timesFaster).AttachExternalCancellation(ct);
 
                 if (EnemySpawner.Instance != null)
                     EnemySpawner.Instance.ReleaseEnemy(this);

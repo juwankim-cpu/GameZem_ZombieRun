@@ -40,16 +40,9 @@ namespace ZombieRun.Adohi.Enemy
             enemySpawner.StartSpawnAsync().Forget();
         }
 
-        float CalculateCurrentDamage()
+        public float CalculateCurrentDamage()
         {
             return 20f * GameManager.Instance.difficulty;
-        }
-
-
-        public void GetHit()
-        {
-            var damage = CalculateCurrentDamage();
-            GameManager.Instance.GetHit(CalculateCurrentDamage());
         }
 
     }

@@ -25,9 +25,20 @@ public class ObstacleManager : MonoBehaviour
     public float minYPosition = -2.0f;
     public float maxYPosition = 2.0f;
 
+    public float minTitleYOffset;
+    public float maxTitleYOffset;
+
     private Transform playerTransform;
 
     public float spawnXOffset = 10.0f;
+
+    [Header("초기 스폰 설정")]
+    [Tooltip("게임 시작 시 미리 생성할 장애물 개수")]
+    public int initialObstacleCount = 5;
+    [Tooltip("초기 장애물 생성 X 최소 위치")]
+    public float initialSpawnMinX = 0f;
+    [Tooltip("초기 장애물 생성 X 최대 위치")]
+    public float initialSpawnMaxX = 15f;
 
     void Awake()
     {
@@ -68,8 +79,76 @@ public class ObstacleManager : MonoBehaviour
         {
             Debug.LogError("CharactorMove 컴포넌트를 가진 플레이어 오브젝트를 찾을 수 없습니다! 장애물 생성 위치가 고정됩니다.");
         }
+
+        // 초기 장애물 생성
+        SpawnInitialObstacles();
+
         //GameObject.Find("Obstacle").SetActive(false);
         StartCoroutine(SpawnObstaclesCoroutine());
+    }
+
+    /// <summary>
+    /// 게임 시작 시 초기 장애물 생성
+    /// </summary>
+    void SpawnInitialObstacles()
+    {
+        if (obstaclePrefabs == null || obstaclePrefabs.Length == 0) return;
+        if (initialObstacleCount <= 0) return;
+
+        // X 범위(min ~ max)를 장애물 개수만큼 등분
+        float totalRange = initialSpawnMaxX - initialSpawnMinX;
+        float sectionWidth = totalRange / initialObstacleCount;
+
+        for (int i = 0; i < initialObstacleCount; i++)
+        {
+            // 스테이지에 맞는 프리팹 선택
+            GameObject prefab = GetPrefabByStage();
+
+            // i번째 구간의 시작과 끝
+            float sectionStart = initialSpawnMinX + (i * sectionWidth);
+            float sectionEnd = initialSpawnMinX + ((i + 1) * sectionWidth);
+
+            // 해당 구간 내에서 랜덤 X 위치
+            float randomX = Random.Range(sectionStart, sectionEnd);
+
+            // Y 위치를 타이틀을 피한 안전 범위에서 생성
+            // 위쪽 안전 범위: [maxYPosition - maxTitleYOffset, maxYPosition]
+            // 아래쪽 안전 범위: [minYPosition, minYPosition + minTitleYOffset]
+            float randomY;
+            if (Random.value > 0.5f)
+            {
+                // 위쪽 안전 범위
+                randomY = Random.Range(maxYPosition - maxTitleYOffset, maxYPosition);
+            }
+            else
+            {
+                // 아래쪽 안전 범위
+                randomY = Random.Range(minYPosition, minYPosition + minTitleYOffset);
+            }
+
+            // 커스텀 X 위치로 장애물 생성 (Y는 기존 로직 사용 - 타이틀 회피)
+            SpawnObstacleAtPosition(prefab, randomX, randomY);
+        }
+    }
+
+    /// <summary>
+    /// 현재 스테이지에 맞는 프리팹 반환
+    /// </summary>
+    GameObject GetPrefabByStage()
+    {
+        int stage = GameManager.Instance.currentStage.Value;
+
+        if (stage == 0 && obstaclePrefabs.Length > 0)
+            return obstaclePrefabs[0];
+        else if (stage == 1 && obstaclePrefabs.Length > 1)
+            return obstaclePrefabs[1];
+        else if (stage == 2 && obstaclePrefabs.Length > 2)
+            return obstaclePrefabs[2];
+        else if (stage == 3)
+            return obstaclePrefabs[Random.Range(0, obstaclePrefabs.Length)];
+
+        // 기본값
+        return obstaclePrefabs[0];
     }
 
     // ⭐️ 장애물 생성 로직을 담당하는 코루틴입니다.
@@ -83,93 +162,67 @@ public class ObstacleManager : MonoBehaviour
         {
 
             var obstacleSpawnInterval = Random.Range(minObstacleSpawnInterval, maxObstacleSpawnInterval);
+
+            // 스테이지에 맞는 프리팹으로 장애물 생성
+            GameObject prefab = GetPrefabByStage();
+            SpawnObstacle(prefab);
+
             yield return new WaitForSeconds(obstacleSpawnInterval);
-            // // ⭐️ 먼저 정해진 시간 간격만큼 대기합니다.
-            // yield return new WaitForSeconds(obstacleSpawnInterval); 
-            // int currentGoal = 0;
-
-            // // ⭐️ goals[0]를 안전하게 숫자로 변환합니다.
-            // // 변환에 성공하면 currentGoal에 값이 저장되고, 실패하면 currentGoal은 0을 유지합니다.
-            // if (goals != null && goals.Length > 0 && int.TryParse(goals[0], out currentGoal))
-            // {
-            //     // 변환 성공
-            //     // Debug.Log($"현재 목표 거리: {currentGoal}"); // 디버그용
-            // }
-            // else
-            // {
-            //     // 변환 실패 (예: goals[0]이 null, 빈 문자열 또는 "미터"인 경우)
-            //     Debug.LogWarning($"목표 거리 문자열 '{goals?[0]}'을(를) 숫자로 변환할 수 없습니다. 현재 스테이지 계산에 기본값 0을 사용합니다.");
-            //     currentGoal = 0;
-            // }
-
-            // ⭐️ currentGoal 변수를 사용하여 스테이지를 판단합니다.
-            if (GameManager.Instance.currentStage.Value == 0)
-            {
-                // Stage1에서 2개의 장애물 생성
-                SpawnObstacle(obstaclePrefabs[0]);
-
-            }
-            if (GameManager.Instance.currentStage.Value == 1)
-            {
-                // Stage2에서 2개의 장애물 생성
-                SpawnObstacle(obstaclePrefabs[1]);
-
-            }
-            if (GameManager.Instance.currentStage.Value == 2)
-            {
-                // Stage3에서 1개의 장애물 생성
-                SpawnObstacle(obstaclePrefabs[2]);
-            }
-            if (GameManager.Instance.currentStage.Value == 3)
-                SpawnObstacle(obstaclePrefabs[Random.Range(0, obstaclePrefabs.Length)]);
-
         }
     }
 
-    // ⭐️ 장애물을 생성하고 위치, 이동, 파괴를 담당하는 별도의 함수
+    // ⭐️ 장애물을 생성하고 위치, 이동, 파괴를 담당하는 별도의 함수 (기본 위치)
     void SpawnObstacle(GameObject prefab)
+    {
+        // 기본 spawnXOffset 위치 사용
+        float spawnX = playerTransform != null ? spawnXOffset : 15f;
+        SpawnObstacle(prefab, spawnX);
+    }
+
+    // ⭐️ 장애물을 생성하고 위치, 이동, 파괴를 담당하는 별도의 함수 (커스텀 X 위치)
+    void SpawnObstacle(GameObject prefab, float customSpawnX)
     {
         if (prefab == null) return;
 
         // 1. Y축 위치와 속도를 랜덤으로 결정합니다.
         float randomY = Random.Range(minYPosition, maxYPosition);
 
-
+        // 타이틀 화면일 때 Y 위치 제한 (타이틀과 겹치지 않게)
         if (!GameManager.Instance.IsPlaying)
         {
-            while (randomY < maxYPosition - 0.5f && randomY > minYPosition + 0.5f)
+            if (Random.value > 0.5f)
             {
-                randomY = Random.Range(minYPosition, maxYPosition);
+                // 위쪽 안전 범위
+                randomY = Random.Range(maxYPosition - maxTitleYOffset, maxYPosition);
+            }
+            else
+            {
+                // 아래쪽 안전 범위
+                randomY = Random.Range(minYPosition, minYPosition + minTitleYOffset);
             }
 
         }
+
+        SpawnObstacleAtPosition(prefab, customSpawnX, randomY);
+    }
+
+    // ⭐️ 장애물을 생성하고 위치, 이동, 파괴를 담당하는 별도의 함수 (커스텀 X, Y 위치)
+    void SpawnObstacleAtPosition(GameObject prefab, float customSpawnX, float customSpawnY)
+    {
+        if (prefab == null) return;
+
         float randomSpeed = Random.Range(minSpeed, maxSpeed);
 
-        // ⭐️ 변경: 장애물이 생성될 X축 위치를 캐릭터 위치에 기반하여 계산
-        float spawnX;
-        if (playerTransform != null)
-        {
-            // 캐릭터의 현재 X 위치 + 오프셋 (캐릭터가 이동해도 X축 위치를 따라감)
-            spawnX = spawnXOffset;
-        }
-        else
-        {
-            // 캐릭터를 찾지 못했으면 이전의 고정된 X 위치를 사용
-            spawnX = 8.86f;
-            Debug.LogWarning("플레이어 Transform을 찾을 수 없어 X=8.86f에 생성합니다.");
-        }
-
-
-        // 2. 장애물 생성
+        // 장애물 생성
         var obstacle = Instantiate(prefab);
 
-        // 3. ⭐️ 초기 위치 설정: (spawnX, randomY, 0)
-        obstacle.transform.position = new Vector3(spawnX, randomY, 0f);
+        // 초기 위치 설정: (customSpawnX, customSpawnY, 0)
+        obstacle.transform.position = new Vector3(customSpawnX, customSpawnY, 0f);
 
-        // 4. 이동 및 파괴를 위한 컴포넌트 추가
-        ObstacleMover mover = obstacle.AddComponent<ObstacleMover>();
+        // 이동 및 파괴를 위한 컴포넌트 추가
+        ObstacleMover mover = obstacle.GetComponent<ObstacleMover>();
 
-        // 5. 랜덤으로 결정된 속도를 전달합니다.
+        // 랜덤으로 결정된 속도를 전달합니다.
         mover.moveSpeed = randomSpeed;
     }
 

@@ -19,7 +19,7 @@ MonoBehaviour:
   SeamlessFadeInEase: 8
   SeamlessFadeOutEase: 11
   AudioFilterSlope: 1
-  UpdateMode: 0
+  UpdateMode: 1
   DefaultAudioPlayerPoolSize: 5
   PitchSetting: 1
   AlwaysPlayMusicAsBGM: 1

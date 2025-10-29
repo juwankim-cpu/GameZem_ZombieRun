@@ -2,8 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
+using DG.Tweening;
+using LeTai.Asset.TranslucentImage;
 using UnityAtoms.BaseAtoms;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace ZombieRun.Adohi.Ranking
 {
@@ -40,6 +43,16 @@ namespace ZombieRun.Adohi.Ranking
         [Tooltip("랭킹에 등록할 플레이어 이름")]
         [SerializeField] private string defaultPlayerName = "Player";
 
+        [Header("Online Ranking Settings")]
+        [Tooltip("온라인 랭킹 사용 여부")]
+        [SerializeField] private bool useOnlineRanking = false;
+        [Tooltip("구글 시트 Web App URL (Google Apps Script 배포 URL)")]
+        [SerializeField] private string googleSheetWebAppUrl = "";
+        [Tooltip("온라인 요청 타임아웃 시간 (초)")]
+        [SerializeField] private float requestTimeout = 10f;
+        [Tooltip("온라인 요청 실패 시 자동으로 오프라인 모드로 전환")]
+        [SerializeField] private bool autoFallbackToOffline = true;
+
         [Header("Reset Settings")]
         [Tooltip("랭킹을 리셋할 키코드")]
         [SerializeField] private KeyCode resetKeyCode = KeyCode.Delete;
@@ -47,27 +60,39 @@ namespace ZombieRun.Adohi.Ranking
         [SerializeField] private bool enableResetKey = true;
 
         private RankingData rankingData;
+        private bool isOnlineMode = false; // 현재 온라인 모드 사용 중인지
 
         public TMPro.TextMeshProUGUI currentScoreText;
         public List<TMPro.TextMeshProUGUI> rankingScoreTexts;
 
         public UIAnimation rankingUIAnimation;
+        public TranslucentImage blurImage;
+
+        [Header("Blur Animation Settings")]
+        [SerializeField] private float blurTargetAlpha = 0.8f;
+        [SerializeField] private float blurFadeDuration = 0.3f;
+        [SerializeField] private Ease blurFadeEase = Ease.OutQuad;
+
+        private Tween blurTween;
+
+        // 중복 등록 방지용 플래그
+        private bool hasRegisteredThisSession = false;
+
 
         void Awake()
         {
-            // 1. 기존 랭킹 데이터 로드
-            LoadRankings();
+            blurImage.color = new Color(blurImage.color.r, blurImage.color.g, blurImage.color.b, 0f);
 
-            // 2. 현재 점수를 랭킹에 등록 (RegisterScore 내부에서 자동으로 SaveRankings 호출됨)
-            if (autoRegisterOnAwake && currentScore != null && currentScore.Value > 0)
+            // 온라인 모드 초기화
+            isOnlineMode = useOnlineRanking && !string.IsNullOrEmpty(googleSheetWebAppUrl);
+            if (isOnlineMode)
             {
-                RegisterCurrentScore(defaultPlayerName);
+                Debug.Log("[RankingSystem] 📡 온라인 랭킹 모드 활성화 (연결 실패 시 자동으로 오프라인 전환)");
             }
-
-            // 3. UI 업데이트
-            UpdateRankingDisplay();
-
-            rankingUIAnimation.Show().SafeAsync(this).Forget();
+            else
+            {
+                Debug.Log("[RankingSystem] 💾 오프라인 랭킹 모드");
+            }
         }
 
         void Update()
@@ -82,18 +107,109 @@ namespace ZombieRun.Adohi.Ranking
 
         public void UpdateAndShow()
         {
-            LoadRankings();
+            UpdateAndShowAsync().Forget();
+        }
 
-            // 2. 현재 점수를 랭킹에 등록 (RegisterScore 내부에서 자동으로 SaveRankings 호출됨)
-            if (autoRegisterOnAwake && currentScore != null && currentScore.Value > 0)
+        private async UniTaskVoid UpdateAndShowAsync()
+        {
+            var startTime = Time.realtimeSinceStartup;
+            Debug.Log($"[RankingSystem] ⏱️ UpdateAndShow 시작 (모드: {(isOnlineMode ? "온라인" : "오프라인")})");
+
+            // 랭킹 데이터가 이미 로드되어 있지 않으면 로드
+            if (rankingData == null || rankingData.rankings == null)
             {
-                RegisterCurrentScore(defaultPlayerName);
+                Debug.LogWarning($"[RankingSystem] ❌ 미리 로드된 데이터 없음! 지금 로드 시작... (이러면 느려짐!)");
+                if (isOnlineMode)
+                {
+                    // 온라인 모드: 구글 시트에서 데이터 로드
+                    Debug.Log($"[RankingSystem] 📡 온라인 로드 시작...");
+                    var loadStart = Time.realtimeSinceStartup;
+                    bool success = await LoadRankingsOnline();
+                    Debug.Log($"[RankingSystem] 📡 온라인 로드 결과: {(success ? "성공" : "실패")} ({(Time.realtimeSinceStartup - loadStart):F3}초)");
+
+                    if (!success && autoFallbackToOffline)
+                    {
+                        Debug.Log("[RankingSystem] 📡→💾 온라인 연결 실패 → 오프라인 모드로 전환");
+                        isOnlineMode = false;
+                        LoadRankings();
+                    }
+                }
+                else
+                {
+                    // 오프라인 모드: 로컬에서 데이터 로드
+                    LoadRankings();
+                }
+                Debug.Log($"[RankingSystem] ⏱️ 로드 완료 ({(Time.realtimeSinceStartup - startTime):F3}초)");
+            }
+            else
+            {
+                Debug.Log($"[RankingSystem] ⚡ 미리 로드된 랭킹 데이터 사용! (항목: {rankingData.rankings.Count}개) ({(Time.realtimeSinceStartup - startTime):F3}초)");
             }
 
-            // 3. UI 업데이트
+            // 현재 점수를 랭킹에 등록 (중복 등록 방지)
+            if (autoRegisterOnAwake && currentScore != null && currentScore.Value > 0 && !hasRegisteredThisSession)
+            {
+                // 점수 등록 (즉시 로컬에 추가하고 UI에 표시)
+                AddScoreToRankingData(defaultPlayerName, currentScore.Value);
+                hasRegisteredThisSession = true;
+
+                // 온라인 저장은 백그라운드에서 (기다리지 않음)
+                if (isOnlineMode)
+                {
+                    SaveRankingsOnlineAsync().Forget();
+                }
+            }
+
+            Debug.Log($"[RankingSystem] ⏱️ 점수 등록 완료 ({(Time.realtimeSinceStartup - startTime):F3}초)");
+
+            // UI 업데이트
             UpdateRankingDisplay();
 
-            rankingUIAnimation.Show().SafeAsync(this).Forget();
+            Debug.Log($"[RankingSystem] ⏱️ UI 데이터 업데이트 완료 ({(Time.realtimeSinceStartup - startTime):F3}초)");
+
+            // UI 표시
+            Debug.Log($"[RankingSystem] 🎬 UI 애니메이션 시작...");
+            await rankingUIAnimation.Show();
+
+            Debug.Log($"[RankingSystem] ✅ UI 애니메이션 완료! ({(Time.realtimeSinceStartup - startTime):F3}초)");
+
+            blurTween?.Kill();
+            blurTween = blurImage.DOFade(blurTargetAlpha, blurFadeDuration).SetEase(blurFadeEase).SetUpdate(true);
+
+            Debug.Log($"[RankingSystem] ✅ 블러 효과 시작! 총 시간: {(Time.realtimeSinceStartup - startTime):F3}초");
+        }
+
+        /// <summary>
+        /// 점수를 랭킹 데이터에 추가 (로컬 처리, 즉시 완료)
+        /// </summary>
+        private void AddScoreToRankingData(string playerName, float score)
+        {
+            if (rankingData == null)
+            {
+                rankingData = new RankingData();
+            }
+
+            // 새로운 랭킹 엔트리 생성
+            RankingEntry newEntry = new RankingEntry(playerName, score);
+
+            // 랭킹 리스트에 추가
+            rankingData.rankings.Add(newEntry);
+
+            // 점수 기준 내림차순 정렬
+            rankingData.rankings = rankingData.rankings
+                .OrderByDescending(entry => entry.score)
+                .ToList();
+
+            // 상위 MAX_RANKINGS개만 유지
+            if (rankingData.rankings.Count > MAX_RANKINGS)
+            {
+                rankingData.rankings = rankingData.rankings.Take(MAX_RANKINGS).ToList();
+            }
+
+            // 로컬에 즉시 저장
+            SaveRankings();
+
+            Debug.Log($"[RankingSystem] 점수 등록 완료: {playerName} - {(int)score}미터");
         }
 
         /// <summary>
@@ -291,6 +407,197 @@ namespace ZombieRun.Adohi.Ranking
             {
                 var entry = rankingData.rankings[i];
                 Debug.Log($"{i + 1}등: {entry.playerName} - {entry.score}점 ({entry.dateTime})");
+            }
+        }
+
+        // ========== 온라인 랭킹 메서드 ==========
+
+        /// <summary>
+        /// 랭킹 데이터 미리 로드 (백그라운드에서 실행)
+        /// 게임 시작 시 미리 호출하면 나중에 빠르게 표시 가능
+        /// </summary>
+        public async UniTask PreloadRankingsAsync()
+        {
+            Debug.Log("[RankingSystem] 🔄 랭킹 데이터 미리 로드 시작...");
+
+            if (isOnlineMode)
+            {
+                // 온라인 모드: 구글 시트에서 데이터 로드
+                bool success = await LoadRankingsOnline();
+                if (!success && autoFallbackToOffline)
+                {
+                    Debug.Log("[RankingSystem] 📡→💾 온라인 연결 실패 → 오프라인 모드로 전환");
+                    isOnlineMode = false;
+                    LoadRankings();
+                }
+            }
+            else
+            {
+                // 오프라인 모드: 로컬에서 데이터 로드
+                LoadRankings();
+            }
+
+            Debug.Log("[RankingSystem] ✓ 랭킹 데이터 미리 로드 완료");
+        }
+
+        /// <summary>
+        /// 구글 시트에서 랭킹 데이터 로드
+        /// </summary>
+        private async UniTask<bool> LoadRankingsOnline()
+        {
+            if (string.IsNullOrEmpty(googleSheetWebAppUrl))
+            {
+                Debug.LogError("[RankingSystem] Google Sheet Web App URL이 설정되지 않았습니다.");
+                return false;
+            }
+
+            try
+            {
+                // GET 요청으로 랭킹 데이터 가져오기
+                string url = $"{googleSheetWebAppUrl}?action=get";
+
+                using (UnityWebRequest request = UnityWebRequest.Get(url))
+                {
+                    request.timeout = (int)requestTimeout;
+
+                    await request.SendWebRequest();
+
+                    if (request.result == UnityWebRequest.Result.Success)
+                    {
+                        string json = request.downloadHandler.text;
+                        rankingData = JsonUtility.FromJson<RankingData>(json);
+
+                        if (rankingData == null)
+                        {
+                            rankingData = new RankingData();
+                        }
+
+                        Debug.Log($"[RankingSystem] 온라인 랭킹 로드 성공: {rankingData.rankings.Count}개 항목");
+                        return true;
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"[RankingSystem] 온라인 연결 실패: {request.error} → 오프라인 모드로 전환");
+                        return false;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                // 타임아웃이나 네트워크 오류는 정상적인 상황 (오프라인 환경)
+                Debug.LogWarning($"[RankingSystem] 온라인 연결 불가 ({e.Message}) → 오프라인 랭킹 사용");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 구글 시트에 랭킹 데이터 저장
+        /// </summary>
+        private async UniTask<bool> SaveRankingsOnline()
+        {
+            if (string.IsNullOrEmpty(googleSheetWebAppUrl))
+            {
+                Debug.LogError("[RankingSystem] Google Sheet Web App URL이 설정되지 않았습니다.");
+                return false;
+            }
+
+            try
+            {
+                string json = JsonUtility.ToJson(rankingData);
+
+                WWWForm form = new WWWForm();
+                form.AddField("action", "save");
+                form.AddField("data", json);
+
+                using (UnityWebRequest request = UnityWebRequest.Post(googleSheetWebAppUrl, form))
+                {
+                    request.timeout = (int)requestTimeout;
+
+                    await request.SendWebRequest();
+
+                    if (request.result == UnityWebRequest.Result.Success)
+                    {
+                        Debug.Log("[RankingSystem] 온라인 랭킹 저장 성공 ✓");
+                        return true;
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"[RankingSystem] 온라인 저장 실패: {request.error} (로컬에는 저장됨)");
+                        return false;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                // 타임아웃이나 네트워크 오류는 정상적인 상황 (오프라인 환경)
+                Debug.LogWarning($"[RankingSystem] 온라인 저장 불가 ({e.Message}) (로컬에는 저장됨)");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 온라인으로 점수 등록
+        /// </summary>
+        private async UniTask<bool> RegisterCurrentScoreOnline(string playerName)
+        {
+            if (currentScore == null)
+                return false;
+
+            // 랭킹 데이터가 없으면 로드 (미리 로드되어 있으면 스킵)
+            if (rankingData == null || rankingData.rankings == null)
+            {
+                Debug.Log("[RankingSystem] 랭킹 데이터가 없어서 로드합니다...");
+                bool loadSuccess = await LoadRankingsOnline();
+                if (!loadSuccess && autoFallbackToOffline)
+                {
+                    Debug.Log("[RankingSystem] 📡→💾 온라인 연결 실패 → 오프라인으로 등록");
+                    isOnlineMode = false;
+                    RegisterCurrentScore(playerName);
+                    return false;
+                }
+            }
+            else
+            {
+                Debug.Log("[RankingSystem] ⚡ 미리 로드된 데이터 사용 - 로드 시간 절약!");
+            }
+
+            // 새로운 랭킹 엔트리 생성
+            RankingEntry newEntry = new RankingEntry(playerName, currentScore.Value);
+
+            // 랭킹 리스트에 추가
+            rankingData.rankings.Add(newEntry);
+
+            // 점수 기준 내림차순 정렬
+            rankingData.rankings = rankingData.rankings
+                .OrderByDescending(entry => entry.score)
+                .ToList();
+
+            // 상위 MAX_RANKINGS개만 유지
+            if (rankingData.rankings.Count > MAX_RANKINGS)
+            {
+                rankingData.rankings = rankingData.rankings.Take(MAX_RANKINGS).ToList();
+            }
+
+            // 로컬에 즉시 저장 (백업용)
+            SaveRankings();
+
+            // 온라인으로 저장 (백그라운드에서 실행 - 기다리지 않음!)
+            SaveRankingsOnlineAsync().Forget();
+
+            return true;
+        }
+
+        /// <summary>
+        /// 온라인 저장을 백그라운드에서 실행
+        /// </summary>
+        private async UniTaskVoid SaveRankingsOnlineAsync()
+        {
+            Debug.Log("[RankingSystem] 백그라운드에서 온라인 저장 시도 중...");
+            bool saveSuccess = await SaveRankingsOnline();
+
+            if (!saveSuccess)
+            {
+                Debug.Log("[RankingSystem] 온라인 저장 실패했지만 로컬에는 저장되어 있습니다.");
             }
         }
     }

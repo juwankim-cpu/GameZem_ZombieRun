@@ -18,23 +18,28 @@ namespace ZombieRun.Adohi
         public Transform body;
 
 
-        public async UniTask ShowAsnyc()
+        public async UniTask ShowAsnyc(float speedMultiplier = 1f)
         {
-            await transform.DOMoveY(showHeight, 1f).SetEase(Ease.OutBack).ToUniTask().SafeAsync(this); ;
+            float duration = 1f / speedMultiplier;
+            await transform.DOMoveY(showHeight, duration).SetEase(Ease.OutBack).ToUniTask().SafeAsync(this);
         }
 
-        public async UniTask HideAsync()
+        public async UniTask HideAsync(float speedMultiplier = 1f)
         {
-            await transform.DOMoveY(hideHeight, 1f).SetEase(Ease.OutBack).ToUniTask().SafeAsync(this);
+            float duration = 1f / speedMultiplier;
+            await transform.DOMoveY(hideHeight, duration).SetEase(Ease.OutBack).ToUniTask().SafeAsync(this);
         }
 
-        public async UniTask ScaleUpAsync()
+        public async UniTask ScaleUpAsync(float speedMultiplier = 1f)
         {
-            await body.DOScale(scaleUpValue, scaleDuration).SetEase(scaleEaseType).ToUniTask().SafeAsync(this);
+            float duration = scaleDuration / speedMultiplier;
+            await body.DOScale(scaleUpValue, duration).SetEase(scaleEaseType).ToUniTask().SafeAsync(this);
         }
-        public async UniTask ScaleDownAsync()
+
+        public async UniTask ScaleDownAsync(float speedMultiplier = 1f)
         {
-            await body.DOScale(scaleDownValue, scaleDuration).SetEase(scaleEaseType).ToUniTask().SafeAsync(this);
+            float duration = scaleDuration / speedMultiplier;
+            await body.DOScale(scaleDownValue, duration).SetEase(scaleEaseType).ToUniTask().SafeAsync(this);
         }
 
 

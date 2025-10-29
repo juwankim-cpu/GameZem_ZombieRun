@@ -64,8 +64,8 @@ MonoBehaviour:
   sightDelay: 1
   resultDelay: 1
   hitSfx:
-    ID: 1073741840
-    _sourceAsset: {fileID: 11400000, guid: 73ea567389bac114aac405527c5c5822, type: 2}
+    ID: 1073741855
+    _sourceAsset: {fileID: 11400000, guid: 331e339004034b14a85690910e5ca224, type: 2}
     <DebugObject>k__BackingField: {fileID: 1780425838107803266}
 --- !u!114 &1239050339482164529
 MonoBehaviour:
@@ -166,11 +166,11 @@ MonoBehaviour:
   sightOrigin: {fileID: 577525253239794455}
   width: 0.25
   distance: 0
-  maxDistance: 7.3
+  maxDistance: 7.08
   leftAngle: -15
   rightAngle: 15
   sightColor: {r: 0.83137256, g: 0.2627451, b: 0.35686275, a: 0.35686275}
-  blendMode: 1
+  blendMode: 2
   useEmission: 0
   emissionColor: {r: 1, g: 0, b: 0, a: 1}
   emissionIntensity: 0
@@ -183,6 +183,7 @@ MonoBehaviour:
   sortingOrder: 6
   sightTexture: {fileID: 0}
   textureScale: 1
+  offsetAngle: 60
 --- !u!33 &1837027660956732567
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -460,11 +461,11 @@ MonoBehaviour:
   sightOrigin: {fileID: 909533469778458074}
   width: 0.25
   distance: 0
-  maxDistance: 7.3
+  maxDistance: 7.08
   leftAngle: -15
   rightAngle: 15
   sightColor: {r: 0.83137256, g: 0.2627451, b: 0.35686275, a: 0.35686275}
-  blendMode: 1
+  blendMode: 2
   useEmission: 0
   emissionColor: {r: 1, g: 0, b: 0, a: 1}
   emissionIntensity: 0
@@ -477,6 +478,7 @@ MonoBehaviour:
   sortingOrder: 6
   sightTexture: {fileID: 0}
   textureScale: 1
+  offsetAngle: 60
 --- !u!33 &256624853043577582
 MeshFilter:
   m_ObjectHideFlags: 0

@@ -91,6 +91,18 @@ public class UISimpleParticle : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Canvas Scale Factor 가져오기 (화면비/해상도에 따른 보정)
+    /// </summary>
+    float GetCanvasScaleFactor()
+    {
+        if (canvas != null)
+        {
+            return canvas.scaleFactor;
+        }
+        return 1f;
+    }
+
     private async void Start()
     {
         if (playOnStart)
@@ -129,7 +141,10 @@ public class UISimpleParticle : MonoBehaviour
         image.color = particleColor;
 
         RectTransform rect = particle.GetComponent<RectTransform>();
-        rect.sizeDelta = particleSize;
+
+        // Canvas Scale Factor 보정 (화면비와 무관하게 일정한 크기 유지)
+        float scaleFactor = GetCanvasScaleFactor();
+        rect.sizeDelta = particleSize / scaleFactor;
         rect.anchorMin = new Vector2(0.5f, 0.5f);
         rect.anchorMax = new Vector2(0.5f, 0.5f);
         rect.pivot = new Vector2(0.5f, 0.5f);
@@ -142,17 +157,25 @@ public class UISimpleParticle : MonoBehaviour
     /// </summary>
     GameObject GetParticle()
     {
+        GameObject particle;
+
         if (usePooling && particlePool.Count > 0)
         {
-            GameObject particle = particlePool[0];
+            particle = particlePool[0];
             particlePool.RemoveAt(0);
             particle.SetActive(true);
+
+            // Scale Factor가 변경되었을 수 있으므로 크기 재설정
+            RectTransform rect = particle.GetComponent<RectTransform>();
+            float scaleFactor = GetCanvasScaleFactor();
+            rect.sizeDelta = particleSize / scaleFactor;
+
             activeParticles.Add(particle);
             return particle;
         }
         else
         {
-            GameObject particle = CreateParticleObject();
+            particle = CreateParticleObject();
             activeParticles.Add(particle);
             return particle;
         }
@@ -211,9 +234,9 @@ public class UISimpleParticle : MonoBehaviour
         RectTransform rectTransform = particle.GetComponent<RectTransform>();
         Image image = particle.GetComponent<Image>();
 
-        // 생성 위치 설정
+        // 생성 위치 설정 (부모 scale 보정)
         Vector2 spawnPos = GetSpawnPosition();
-        rectTransform.anchoredPosition = spawnPos;
+        rectTransform.anchoredPosition = CompensateForParentScale(spawnPos);
 
         // 초기 설정
         image.color = particleColor;
@@ -227,8 +250,9 @@ public class UISimpleParticle : MonoBehaviour
             rectTransform.localScale = Vector3.one;
         }
 
-        // 목표 위치 계산
+        // 목표 위치 계산 (부모 scale 보정)
         Vector2 targetPos = CalculateTargetPosition(spawnPos);
+        Vector2 compensatedTargetPos = CompensateForParentScale(targetPos);
 
         // 애니메이션 시퀀스
         Sequence sequence = DOTween.Sequence();
@@ -239,9 +263,8 @@ public class UISimpleParticle : MonoBehaviour
             sequence = sequence.Join(rectTransform.DOScale(endScale, scaleDuration).SetEase(scaleEase));
         }
 
-        Debug.Log($"targetPos: {targetPos}");
         // 이동 애니메이션
-        sequence = sequence.Join(rectTransform.DOAnchorPos(targetPos, moveDuration).SetEase(moveEase));
+        sequence = sequence.Join(rectTransform.DOAnchorPos(compensatedTargetPos, moveDuration).SetEase(moveEase));
 
         // 회전 애니메이션
         if (useRotation)
@@ -276,15 +299,37 @@ public class UISimpleParticle : MonoBehaviour
     Vector2 GetSpawnPosition()
     {
         Vector2 basePos = Vector2.zero;
+        RectTransform myRect = transform as RectTransform;
 
         if (spawnPoint != null)
         {
             if (coordinateType == CoordinateType.Canvas)
             {
                 RectTransform spawnRect = spawnPoint.GetComponent<RectTransform>();
-                if (spawnRect != null)
+                if (spawnRect != null && myRect != null && canvas != null)
                 {
-                    basePos = spawnRect.anchoredPosition;
+                    // spawnPoint의 월드 위치를 캔버스 로컬 좌표로 변환
+                    Vector2 spawnCanvasPos;
+                    Camera canvasCamera = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+
+                    RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                        canvasRectTransform,
+                        RectTransformUtility.WorldToScreenPoint(canvasCamera, spawnRect.position),
+                        canvasCamera,
+                        out spawnCanvasPos
+                    );
+
+                    // 이 오브젝트의 위치를 캔버스 로컬 좌표로 변환
+                    Vector2 myCanvasPos;
+                    RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                        canvasRectTransform,
+                        RectTransformUtility.WorldToScreenPoint(canvasCamera, myRect.position),
+                        canvasCamera,
+                        out myCanvasPos
+                    );
+
+                    // 차이를 계산하여 이 오브젝트 기준 로컬 좌표로 변환
+                    basePos = spawnCanvasPos - myCanvasPos;
                 }
             }
             else if (coordinateType == CoordinateType.World)
@@ -297,13 +342,38 @@ public class UISimpleParticle : MonoBehaviour
             }
         }
 
-        // 랜덤 오프셋 추가
+        // 랜덤 오프셋 추가 (Canvas Scale Factor 보정)
+        float scaleFactor = GetCanvasScaleFactor();
+        Vector2 effectiveRadius = randomSpawnRadius / scaleFactor;
+
         Vector2 randomOffset = new Vector2(
-            UnityEngine.Random.Range(-randomSpawnRadius.x, randomSpawnRadius.x),
-            UnityEngine.Random.Range(-randomSpawnRadius.y, randomSpawnRadius.y)
+            UnityEngine.Random.Range(-effectiveRadius.x, effectiveRadius.x),
+            UnityEngine.Random.Range(-effectiveRadius.y, effectiveRadius.y)
         );
 
         return basePos + randomOffset;
+    }
+
+    /// <summary>
+    /// 부모의 localScale을 고려하여 위치 보정
+    /// </summary>
+    Vector2 CompensateForParentScale(Vector2 position)
+    {
+        RectTransform parentRect = transform as RectTransform;
+        if (parentRect != null)
+        {
+            Vector3 parentScale = parentRect.localScale;
+
+            // scale이 0이 아닐 때만 보정
+            if (Mathf.Abs(parentScale.x) > 0.001f && Mathf.Abs(parentScale.y) > 0.001f)
+            {
+                return new Vector2(
+                    position.x / parentScale.x,
+                    position.y / parentScale.y
+                );
+            }
+        }
+        return position;
     }
 
     /// <summary>
@@ -312,6 +382,11 @@ public class UISimpleParticle : MonoBehaviour
     Vector2 CalculateTargetPosition(Vector2 startPos)
     {
         Vector2 direction = moveDirection.normalized;
+        Vector2 movement = Vector2.zero;
+
+        // Canvas Scale Factor 보정
+        float scaleFactor = GetCanvasScaleFactor();
+        float effectiveDistance = moveDistance / scaleFactor;
 
         switch (movementType)
         {
@@ -321,45 +396,101 @@ public class UISimpleParticle : MonoBehaviour
                     float randomAngle = UnityEngine.Random.Range(-directionRandomAngle, directionRandomAngle);
                     direction = Quaternion.Euler(0, 0, randomAngle) * direction;
                 }
-                return startPos + direction * moveDistance;
+                movement = direction * effectiveDistance;
+                break;
 
             case MovementType.Outward:
                 // 중심에서 바깥으로
                 Vector2 outwardDir = startPos.normalized;
                 if (outwardDir == Vector2.zero) outwardDir = UnityEngine.Random.insideUnitCircle.normalized;
-                return startPos + outwardDir * moveDistance;
+                movement = outwardDir * effectiveDistance;
+                break;
 
             case MovementType.Random:
                 // 완전 랜덤 방향
                 Vector2 randomDir = UnityEngine.Random.insideUnitCircle.normalized;
-                return startPos + randomDir * moveDistance;
+                movement = randomDir * effectiveDistance;
+                break;
 
             default:
-                return startPos + direction * moveDistance;
+                movement = direction * effectiveDistance;
+                break;
         }
+
+        return startPos + movement;
     }
 
     /// <summary>
-    /// 월드 좌표를 캔버스 좌표로 변환
+    /// 월드 좌표를 이 오브젝트 기준 로컬 좌표로 변환 (월드 오브젝트 → UI)
     /// </summary>
     Vector2 WorldToCanvasPosition(Vector3 worldPos)
     {
         if (canvas == null || canvasRectTransform == null) return Vector2.zero;
+        RectTransform myRect = transform as RectTransform;
+        if (myRect == null) return Vector2.zero;
 
-        Vector2 screenPos = RectTransformUtility.WorldToScreenPoint(canvas.worldCamera, worldPos);
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRectTransform, screenPos, canvas.worldCamera, out Vector2 canvasPos);
-        return canvasPos;
+        // 1. 월드 좌표 → 스크린 좌표 (메인 카메라 사용)
+        Camera mainCamera = Camera.main;
+        if (mainCamera == null) return Vector2.zero;
+
+        Vector3 screenPos = mainCamera.WorldToScreenPoint(worldPos);
+
+        // 2. 스크린 좌표 → 캔버스 로컬 좌표
+        Camera canvasCamera = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+
+        // 목표 위치의 캔버스 좌표
+        Vector2 targetCanvasPos;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            canvasRectTransform,
+            screenPos,
+            canvasCamera,
+            out targetCanvasPos
+        );
+
+        // 이 오브젝트의 캔버스 좌표
+        Vector2 myCanvasPos;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            canvasRectTransform,
+            RectTransformUtility.WorldToScreenPoint(canvasCamera, myRect.position),
+            canvasCamera,
+            out myCanvasPos
+        );
+
+        // 차이를 반환 (이 오브젝트 기준 로컬 좌표)
+        return targetCanvasPos - myCanvasPos;
     }
 
     /// <summary>
-    /// 스크린 좌표를 캔버스 좌표로 변환
+    /// 스크린 좌표를 이 오브젝트 기준 로컬 좌표로 변환
     /// </summary>
     Vector2 ScreenToCanvasPosition(Vector3 screenPos)
     {
         if (canvas == null || canvasRectTransform == null) return Vector2.zero;
+        RectTransform myRect = transform as RectTransform;
+        if (myRect == null) return Vector2.zero;
 
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRectTransform, screenPos, canvas.worldCamera, out Vector2 canvasPos);
-        return canvasPos;
+        Camera canvasCamera = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+
+        // 목표 위치의 캔버스 좌표
+        Vector2 targetCanvasPos;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            canvasRectTransform,
+            screenPos,
+            canvasCamera,
+            out targetCanvasPos
+        );
+
+        // 이 오브젝트의 캔버스 좌표
+        Vector2 myCanvasPos;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            canvasRectTransform,
+            RectTransformUtility.WorldToScreenPoint(canvasCamera, myRect.position),
+            canvasCamera,
+            out myCanvasPos
+        );
+
+        // 차이를 반환 (이 오브젝트 기준 로컬 좌표)
+        return targetCanvasPos - myCanvasPos;
     }
 
     /// <summary>

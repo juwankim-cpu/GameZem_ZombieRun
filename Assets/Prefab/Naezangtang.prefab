@@ -11,6 +11,8 @@ GameObject:
   - component: {fileID: 6434280334614673754}
   - component: {fileID: 8440382337582098793}
   - component: {fileID: 6411516635070696900}
+  - component: {fileID: 912173254036345322}
+  - component: {fileID: 4911406309149922540}
   m_Layer: 0
   m_Name: Naezangtang
   m_TagString: HP
@@ -75,8 +77,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: 1234541677
+  m_SortingLayer: 1
   m_SortingOrder: 0
   m_Sprite: {fileID: 6830088387647557959, guid: 6dda1b28a0d36cb4ebaf86567f1ab681, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -135,6 +137,39 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 0.3, y: 0.3}
   m_EdgeRadius: 0
+--- !u!114 &912173254036345322
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3900197989190454381}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a89c7c8c6d7b6fe43a064473eefebeb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemType: 0
+  itemManager: {fileID: 0}
+  itemGetSfx:
+    ID: 1073741838
+    _sourceAsset: {fileID: 11400000, guid: 73ea567389bac114aac405527c5c5822, type: 2}
+    <DebugObject>k__BackingField: {fileID: 3900197989190454381}
+--- !u!114 &4911406309149922540
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3900197989190454381}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 92c14b79721961c4ebf14dcde9724b4a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  baseOrder: 0
+  orderRange: 1000
+  targetTransform: {fileID: 0}
 --- !u!1 &7876885967182403750
 GameObject:
   m_ObjectHideFlags: 0

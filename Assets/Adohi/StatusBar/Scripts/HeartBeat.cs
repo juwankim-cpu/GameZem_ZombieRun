@@ -23,15 +23,14 @@ public class HeartBeat : MonoBehaviour
     [SerializeField] private bool useRotation = false; // 회전 효과
     [SerializeField] private float rotationAngle = 5f; // 회전 각도
 
-    private RectTransform rectTransform;
+    private Transform targetTransform;
     private Vector3 originalScale;
     private Sequence beatSequence;
     private bool isBeating = false;
 
     void Awake()
     {
-        rectTransform = GetComponent<RectTransform>();
-        originalScale = rectTransform.localScale;
+        targetTransform = transform;
     }
 
     void Start()
@@ -56,6 +55,9 @@ public class HeartBeat : MonoBehaviour
     {
         if (isBeating) return;
 
+        // 박동 시작 시점의 스케일을 오리지널 스케일로 저장
+        originalScale = targetTransform.localScale;
+
         isBeating = true;
         PlayBeat();
     }
@@ -67,8 +69,8 @@ public class HeartBeat : MonoBehaviour
     {
         isBeating = false;
         beatSequence?.Kill();
-        rectTransform.localScale = originalScale;
-        rectTransform.localRotation = Quaternion.identity;
+        targetTransform.localScale = originalScale;
+        targetTransform.localRotation = Quaternion.identity;
     }
 
     /// <summary>
@@ -116,18 +118,18 @@ public class HeartBeat : MonoBehaviour
         float targetScale = 1f + (beatScale - 1f) * intensity;
 
         // 스케일 커지기
-        sequence.Append(rectTransform.DOScale(originalScale * targetScale, beatDuration).SetEase(beatEase));
+        sequence.Append(targetTransform.DOScale(originalScale * targetScale, beatDuration).SetEase(beatEase));
 
         // 회전 효과
         if (useRotation)
         {
             float angle = rotationAngle * intensity;
-            sequence.Join(rectTransform.DORotate(new Vector3(0, 0, angle), beatDuration * 0.5f).SetEase(Ease.OutQuad));
-            sequence.Append(rectTransform.DORotate(Vector3.zero, beatDuration * 0.5f).SetEase(Ease.InQuad));
+            sequence.Join(targetTransform.DORotate(new Vector3(0, 0, angle), beatDuration * 0.5f).SetEase(Ease.OutQuad));
+            sequence.Append(targetTransform.DORotate(Vector3.zero, beatDuration * 0.5f).SetEase(Ease.InQuad));
         }
 
         // 스케일 돌아오기
-        sequence.Append(rectTransform.DOScale(originalScale, beatDuration).SetEase(returnEase));
+        sequence.Append(targetTransform.DOScale(originalScale, beatDuration).SetEase(returnEase));
     }
 
     /// <summary>

@@ -1,4 +1,6 @@
+using Ami.BroAudio;
 using UnityEngine;
+using ZombieRun.Adohi.GameSystem;
 
 public class ItemScript : MonoBehaviour
 {
@@ -10,6 +12,8 @@ public class ItemScript : MonoBehaviour
 
     public ItemType itemType;
     public ItemManager itemManager;
+
+    public SoundID itemGetSfx;
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
@@ -48,6 +52,17 @@ public class ItemScript : MonoBehaviour
                     100f // 최대 HP
                 );
             }
+            if (GameManager.Instance.character != null)
+            {
+                GameManager.Instance.character.hpVFX.PlayParticle();
+                GameManager.Instance.character.hpBarVFX.PlayParticle();
+            }
+        }
+
+        if (itemGetSfx.IsValid())
+        {
+            BroAudio.Play(itemGetSfx);
+
         }
     }
 
@@ -67,6 +82,17 @@ public class ItemScript : MonoBehaviour
                     100f // 최대 Boost
                 );
             }
+            if (GameManager.Instance.character != null)
+            {
+                GameManager.Instance.character.boostVFX.PlayParticle();
+                GameManager.Instance.character.boostBarVFX.PlayParticle();
+            }
+        }
+
+        if (itemGetSfx.IsValid())
+        {
+            BroAudio.Play(itemGetSfx);
+
         }
     }
 }

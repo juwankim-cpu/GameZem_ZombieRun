@@ -41,7 +41,7 @@ namespace ZombieRun.Adohi.Enemy
 
         [Header("레이캐스트 설정")]
         [SerializeField] private LayerMask obstacleLayer;
-        [SerializeField] private float shadowLength = 1f;
+        [SerializeField] private float shadowLength = 1f;  // 기본값 (ObstacleMover가 없을 때)
 
         [Header("Clipper2 설정")]
         [SerializeField] private bool useClipper2 = true;  // Clipper2 사용 여부
@@ -52,12 +52,18 @@ namespace ZombieRun.Adohi.Enemy
         [SerializeField] private Texture2D sightTexture = null;  // 텍스처 (선택사항)
         [SerializeField] private float textureScale = 1f;  // 텍스처 타일링 크기 (1 = 1유닛당 1타일)
 
+        [Header("Offset Angle")]
+        [SerializeField] private float offsetAngle = 30f;
+
         private Mesh mesh;
         private MeshFilter meshFilter;
         private MeshRenderer meshRenderer;
 
         private Enemy enemy;
         private bool isAttacking = false;
+
+        // ObstacleMover 캐싱 (성능 최적화)
+        private Dictionary<Collider2D, float> shadowLengthCache = new Dictionary<Collider2D, float>();
 
         // 그림자 사다리꼴 정의 (로컬 좌표)
         struct ShadowTrapezoid
@@ -73,6 +79,27 @@ namespace ZombieRun.Adohi.Enemy
             this.enemy = enemy;
         }
 
+        /// <summary>
+        /// Collider2D에서 shadowLength 가져오기 (캐싱으로 성능 최적화)
+        /// </summary>
+        private float GetShadowLength(Collider2D col)
+        {
+            // 캐시에 있으면 바로 반환
+            if (shadowLengthCache.TryGetValue(col, out float cachedLength))
+            {
+                return cachedLength;
+            }
+
+            // 캐시에 없으면 GetComponent 호출 (한 번만)
+            ObstacleMover mover = col.GetComponent<ObstacleMover>();
+            float length = mover != null ? mover.shadowLength : shadowLength; // 기본값 사용
+
+            // 캐시에 저장
+            shadowLengthCache[col] = length;
+
+            return length;
+        }
+
         void Start()
         {
             // sightOrigin이 설정되지 않았으면 자기 자신을 사용
@@ -82,7 +109,7 @@ namespace ZombieRun.Adohi.Enemy
             }
 
             SetAmplify(Random.Range(1f, 1.5f) * GameManager.Instance.difficulty);
-            OffsetAngle(Random.Range(-10f, 10f) * GameManager.Instance.difficulty);
+            OffsetAngle(Random.Range(-offsetAngle, offsetAngle) * (GameManager.Instance.difficulty - 1f));
 
             meshFilter = GetComponent<MeshFilter>();
             meshRenderer = GetComponent<MeshRenderer>();
@@ -404,9 +431,20 @@ namespace ZombieRun.Adohi.Enemy
             // 1단계: 박스콜라이더 찾아서 그림자 사다리꼴로 변환
             List<ShadowTrapezoid> shadowTrapezoids = new List<ShadowTrapezoid>();
 
+            // 실제 시야의 하단 너비 계산 (각도에 따라 정확하게)
+            float bottomLeftX = -halfWidth + Mathf.Sin(leftAngleRad) * distance;
+            float bottomRightX = halfWidth + Mathf.Sin(rightAngleRad) * distance;
+
+            // 시야의 최소/최대 X 좌표
+            float minX = Mathf.Min(-halfWidth, halfWidth, bottomLeftX, bottomRightX);
+            float maxX = Mathf.Max(-halfWidth, halfWidth, bottomLeftX, bottomRightX);
+
+            // 검출 박스 너비 (여유분 추가)
+            float detectionWidth = (maxX - minX) + 4f;
+
             Collider2D[] colliders = Physics2D.OverlapBoxAll(
                 sightOrigin.position + sightOrigin.TransformDirection(new Vector2(0, -distance / 2f)),
-                new Vector2(width + 2f, distance + 2f),
+                new Vector2(detectionWidth, distance + 2f),
                 sightOrigin.eulerAngles.z,
                 obstacleLayer
             );
@@ -503,8 +541,9 @@ namespace ZombieRun.Adohi.Enemy
                     // 그림자 끝점 계산 (원점 기준으로!)
                     float hitDistLeft = Vector2.Distance(origin, leftCorner);
                     float hitDistRight = Vector2.Distance(origin, rightCorner);
-                    float shadowEndDistLeft = hitDistLeft + shadowLength;
-                    float shadowEndDistRight = hitDistRight + shadowLength;
+                    float currentShadowLength = GetShadowLength(col);  // 캐싱된 값 사용
+                    float shadowEndDistLeft = hitDistLeft + currentShadowLength;
+                    float shadowEndDistRight = hitDistRight + currentShadowLength;
 
                     ShadowTrapezoid shadow;
                     shadow.topLeft = leftCorner;
@@ -839,8 +878,9 @@ namespace ZombieRun.Adohi.Enemy
 
                     float hitDistLeft = Vector2.Distance(origin, leftCorner);
                     float hitDistRight = Vector2.Distance(origin, rightCorner);
-                    float shadowEndDistLeft = hitDistLeft + shadowLength;
-                    float shadowEndDistRight = hitDistRight + shadowLength;
+                    float currentShadowLength = GetShadowLength(col);  // 캐싱된 값 사용
+                    float shadowEndDistLeft = hitDistLeft + currentShadowLength;
+                    float shadowEndDistRight = hitDistRight + currentShadowLength;
 
                     Vector2 shadowTL = leftCorner;
                     Vector2 shadowTR = rightCorner;

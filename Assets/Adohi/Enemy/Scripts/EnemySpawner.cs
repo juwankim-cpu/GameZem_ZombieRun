@@ -14,8 +14,6 @@ namespace ZombieRun.Adohi.Enemy
     {
         public List<Enemy> enemiePrefabs;
 
-
-        public float difficulty = 1f;
         public int stage => GameManager.Instance.currentStage.Value;
 
 
@@ -46,7 +44,7 @@ namespace ZombieRun.Adohi.Enemy
 
                 while (!ct.IsCancellationRequested)
                 {
-                    var nextInterval = initialSpawnDelay * UnityEngine.Random.Range(minSpawnIntervalAmplify, maxSpawnIntervalAmplify);
+                    var nextInterval = initialSpawnDelay * UnityEngine.Random.Range(minSpawnIntervalAmplify, maxSpawnIntervalAmplify) / GameManager.Instance.difficulty;
 
                     // false인 위치 중 랜덤 선택
                     List<int> availableIndices = new List<int>();

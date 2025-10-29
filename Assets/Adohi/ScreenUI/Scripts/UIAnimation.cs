@@ -1,15 +1,17 @@
 using System;
-using System.Threading;
 using UnityEngine;
 using DG.Tweening;
 using Cysharp.Threading.Tasks;
 using com.cyborgAssets.inspectorButtonPro;
+using ZombieRun.Adohi;
 
 public class UIAnimation : MonoBehaviour
 {
     [Header("애니메이션 설정")]
     [SerializeField] private float duration = 0.5f;
     [SerializeField] private Ease easeType = Ease.OutCubic;
+    [Tooltip("true: Time.timeScale 무시 (일시정지 중에도 애니메이션), false: Time.timeScale 영향 받음")]
+    [SerializeField] private bool ignoreTimeScale = true;  // UI는 기본값 true (기존 동작 유지)
 
     [Header("스케일")]
     [SerializeField] private bool useScale = true;
@@ -35,11 +37,14 @@ public class UIAnimation : MonoBehaviour
     [SerializeField] private bool hideOnStart = true;
     [SerializeField] private bool showOnStart = false;
 
+    [Header("ShowAndHide 설정")]
+    [Tooltip("ShowAndHide 메서드에서 Show 후 대기할 시간 (초)")]
+    [SerializeField] private float defaultWaitTime = 1f;
+
     private RectTransform rectTransform;
     private CanvasGroup canvasGroup;
     private Sequence currentSequence;
     private bool isShowing = false;
-    private CancellationTokenSource cancellationTokenSource;
 
     // 이벤트
     public event Action OnShowCompleted;
@@ -71,13 +76,6 @@ public class UIAnimation : MonoBehaviour
                 canvasGroup = gameObject.AddComponent<CanvasGroup>();
             }
         }
-
-        // CancellationTokenSource 생성 (기존 것이 있으면 재생성)
-        if (cancellationTokenSource == null || cancellationTokenSource.IsCancellationRequested)
-        {
-            cancellationTokenSource?.Dispose();
-            cancellationTokenSource = new CancellationTokenSource();
-        }
     }
 
     void Start()
@@ -97,17 +95,13 @@ public class UIAnimation : MonoBehaviour
 
         if (showOnStart)
         {
-            ShowAsync().Forget();
+            Show().SafeAsync(this).Forget();
         }
     }
 
     void OnDestroy()
     {
         currentSequence?.Kill();
-
-        // 게임오브젝트 파괴 시 모든 진행 중인 UniTask 취소
-        cancellationTokenSource?.Cancel();
-        cancellationTokenSource?.Dispose();
     }
 
     /// <summary>
@@ -117,6 +111,12 @@ public class UIAnimation : MonoBehaviour
     {
         try
         {
+            // 객체가 파괴되었는지 확인
+            if (this == null || gameObject == null) return;
+
+            // 이미 실행 중인 트윈이 있으면 취소 (중복 실행 방지)
+            currentSequence?.Kill();
+
             gameObject.SetActive(true);
 
             // 숨긴 상태로 설정 (active는 그대로 유지)
@@ -129,8 +129,7 @@ public class UIAnimation : MonoBehaviour
         }
         catch (OperationCanceledException)
         {
-            // 취소된 경우 안전하게 처리
-            Debug.Log("[UIAnimation] Show 애니메이션이 취소되었습니다.");
+            // 취소된 경우 안전하게 처리 (OnDestroy에서 취소됨)
         }
     }
 
@@ -141,6 +140,12 @@ public class UIAnimation : MonoBehaviour
     {
         try
         {
+            // 객체가 파괴되었는지 확인
+            if (this == null || gameObject == null) return;
+
+            // 이미 실행 중인 트윈이 있으면 취소 (중복 실행 방지)
+            currentSequence?.Kill();
+
             await PlayAnimation(false);
 
             if (deactivate)
@@ -153,8 +158,7 @@ public class UIAnimation : MonoBehaviour
         }
         catch (OperationCanceledException)
         {
-            // 취소된 경우 안전하게 처리
-            Debug.Log("[UIAnimation] Hide 애니메이션이 취소되었습니다.");
+            // 취소된 경우 안전하게 처리 (OnDestroy에서 취소됨)
         }
     }
 
@@ -163,10 +167,52 @@ public class UIAnimation : MonoBehaviour
     /// </summary>
     public async UniTask Toggle()
     {
+        // 객체가 파괴되었는지 확인
+        if (this == null || gameObject == null) return;
+
         if (isShowing)
-            await Hide();
+            await Hide().SafeAsync(this);
         else
+            await Show().SafeAsync(this);
+    }
+
+    /// <summary>
+    /// Show → 대기 → Hide를 한 번에 실행 (기본 대기 시간 사용)
+    /// </summary>
+    /// <param name="deactivateOnHide">Hide 후 GameObject 비활성화 여부</param>
+    public async UniTask ShowAndHide(bool deactivateOnHide = true)
+    {
+        await ShowAndHide(defaultWaitTime, deactivateOnHide);
+    }
+
+    /// <summary>
+    /// Show → 대기 → Hide를 한 번에 실행 (커스텀 대기 시간)
+    /// </summary>
+    /// <param name="waitTime">Show 후 대기 시간 (초)</param>
+    /// <param name="deactivateOnHide">Hide 후 GameObject 비활성화 여부</param>
+    public async UniTask ShowAndHide(float waitTime, bool deactivateOnHide = true)
+    {
+        try
+        {
+            // 객체가 파괴되었는지 확인
+            if (this == null || gameObject == null) return;
+
+            // 이미 실행 중인 트윈이 있으면 취소
+            currentSequence?.Kill();
+
+            // Show 실행
             await Show();
+
+            // 대기
+            await UniTask.Delay((int)(waitTime * 1000), ignoreTimeScale: ignoreTimeScale, cancellationToken: this.GetCancellationTokenOnDestroy());
+
+            // Hide 실행
+            await Hide(deactivateOnHide);
+        }
+        catch (OperationCanceledException)
+        {
+            // 취소된 경우 안전하게 처리
+        }
     }
 
     /// <summary>
@@ -174,23 +220,31 @@ public class UIAnimation : MonoBehaviour
     /// </summary>
     private async UniTask PlayAnimation(bool show)
     {
+        // 객체가 파괴되었는지 확인
+        if (this == null || gameObject == null) return;
+
         if (rectTransform == null)
         {
             Debug.LogWarning("[UIAnimation] rectTransform이 null입니다. 애니메이션을 건너뜁니다.");
             return;
         }
 
-        var ct = cancellationTokenSource.Token;
-
-        currentSequence?.Kill();
+        // currentSequence는 Show/Hide에서 이미 Kill되었음
         currentSequence = DOTween.Sequence();
-        currentSequence.SetUpdate(true); // 타임스케일 무시
+
+        // 타임스케일 무시 설정
+        if (ignoreTimeScale)
+        {
+            currentSequence = currentSequence.SetUpdate(true);
+        }
 
         // 스케일
         if (useScale)
         {
             Vector3 targetScale = show ? scaleVisible : scaleHidden;
-            currentSequence = currentSequence.Join(rectTransform.DOScale(targetScale, duration).SetEase(easeType).SetUpdate(true));
+            var tween = rectTransform.DOScale(targetScale, duration).SetEase(easeType);
+            if (ignoreTimeScale) tween = tween.SetUpdate(true);
+            currentSequence = currentSequence.Join(tween);
         }
 
         // 포지션
@@ -198,24 +252,30 @@ public class UIAnimation : MonoBehaviour
         {
             Vector2 targetPos = show ? positionVisible : positionHidden;
             Debug.Log($"targetPos: {targetPos}");
-            currentSequence = currentSequence.Join(rectTransform.DOAnchorPos(targetPos, duration).SetEase(easeType).SetUpdate(true));
+            var tween = rectTransform.DOAnchorPos(targetPos, duration).SetEase(easeType);
+            if (ignoreTimeScale) tween = tween.SetUpdate(true);
+            currentSequence = currentSequence.Join(tween);
         }
 
         // 회전
         if (useRotation)
         {
             Vector3 targetRot = show ? rotationVisible : rotationHidden;
-            currentSequence = currentSequence.Join(rectTransform.DORotate(targetRot, duration).SetEase(easeType).SetUpdate(true));
+            var tween = rectTransform.DORotate(targetRot, duration).SetEase(easeType);
+            if (ignoreTimeScale) tween = tween.SetUpdate(true);
+            currentSequence = currentSequence.Join(tween);
         }
 
         // 페이드
         if (useFade && canvasGroup != null)
         {
             float targetAlpha = show ? fadeVisible : fadeHidden;
-            currentSequence = currentSequence.Join(canvasGroup.DOFade(targetAlpha, duration).SetEase(easeType).SetUpdate(true));
+            var tween = canvasGroup.DOFade(targetAlpha, duration).SetEase(easeType);
+            if (ignoreTimeScale) tween = tween.SetUpdate(true);
+            currentSequence = currentSequence.Join(tween);
         }
 
-        await currentSequence.AsyncWaitForCompletion().AsUniTask().AttachExternalCancellation(ct);
+        await currentSequence.SafeAsync(this);
     }
 
     /// <summary>
@@ -223,6 +283,9 @@ public class UIAnimation : MonoBehaviour
     /// </summary>
     private void SetVisualState(bool visible)
     {
+        // 객체가 파괴되었는지 확인
+        if (this == null || gameObject == null) return;
+
         if (rectTransform == null)
         {
             Debug.LogWarning("[UIAnimation] rectTransform이 null입니다. 초기화를 건너뜁니다.");
@@ -247,6 +310,9 @@ public class UIAnimation : MonoBehaviour
     /// </summary>
     public void SetStateImmediate(bool visible)
     {
+        // 객체가 파괴되었는지 확인
+        if (this == null || gameObject == null) return;
+
         SetVisualState(visible);
         gameObject.SetActive(visible);
         isShowing = visible;
@@ -257,6 +323,9 @@ public class UIAnimation : MonoBehaviour
     /// </summary>
     public void CaptureCurrentAsHidden()
     {
+        // 객체가 파괴되었는지 확인
+        if (this == null || gameObject == null || rectTransform == null) return;
+
         if (useScale) scaleHidden = rectTransform.localScale;
         if (usePosition) positionHidden = rectTransform.anchoredPosition;
         if (useRotation) rotationHidden = rectTransform.localEulerAngles;
@@ -270,6 +339,9 @@ public class UIAnimation : MonoBehaviour
     /// </summary>
     public void CaptureCurrentAsVisible()
     {
+        // 객체가 파괴되었는지 확인
+        if (this == null || gameObject == null || rectTransform == null) return;
+
         if (useScale) scaleVisible = rectTransform.localScale;
         if (usePosition) positionVisible = rectTransform.anchoredPosition;
         if (useRotation) rotationVisible = rectTransform.localEulerAngles;
@@ -278,34 +350,47 @@ public class UIAnimation : MonoBehaviour
         Debug.Log($"[캡처] Visible 상태 저장 - Scale:{scaleVisible}, Pos:{positionVisible}");
     }
 
-    // Async 래퍼
-    private async UniTaskVoid ShowAsync() => await Show();
-    private async UniTaskVoid HideAsync() => await Hide();
 
     // 프로퍼티
     public bool IsShowing => isShowing;
+    public bool IgnoreTimeScale
+    {
+        get => ignoreTimeScale;
+        set => ignoreTimeScale = value;
+    }
 
     // ========== 테스트 버튼 ==========
 
     [ProButton]
-    public async void TestShow()
+    public void TestShow()
     {
-        await Show();
-        Debug.Log("Show 완료");
+        Show().SafeAsync(this).Forget();
     }
 
     [ProButton]
-    public async void TestHide()
+    public void TestHide()
     {
-        await Hide();
-        Debug.Log("Hide 완료");
+        Hide().SafeAsync(this).Forget();
     }
 
     [ProButton]
-    public async void TestToggle()
+    public void TestToggle()
     {
-        await Toggle();
-        Debug.Log($"Toggle 완료 - IsShowing: {isShowing}");
+        Toggle().SafeAsync(this).Forget();
+    }
+
+    [ProButton]
+    public void TestShowAndHide()
+    {
+        ShowAndHide().SafeAsync(this).Forget();
+        Debug.Log($"Show → {defaultWaitTime}초 대기 → Hide 실행");
+    }
+
+    [ProButton]
+    public void TestShowAndHide3Sec()
+    {
+        ShowAndHide(3f).SafeAsync(this).Forget();
+        Debug.Log("Show → 3초 대기 → Hide 실행 (커스텀)");
     }
 
     [ProButton]

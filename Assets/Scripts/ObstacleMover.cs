@@ -6,6 +6,11 @@ public class ObstacleMover : MonoBehaviour
 
     public float minXPosition = -20f;
 
+
+    [Header("그림자 설정")]
+    [Tooltip("EnemySightSystem에서 사용할 그림자 길이")]
+    public float shadowLength = 1f;
+
     void Update()
     {
 
