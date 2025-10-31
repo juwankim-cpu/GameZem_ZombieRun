@@ -361,7 +361,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 272426445170309319, guid: 3f48d703faf90034c952e2db45798a74, type: 3}
       propertyPath: isFirstStage
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 272426445170309319, guid: 3f48d703faf90034c952e2db45798a74, type: 3}
       propertyPath: currentStage._value

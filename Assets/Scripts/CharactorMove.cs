@@ -47,6 +47,8 @@ public class CharactorMove : MonoBehaviour
     public Fever feverUI;
     public float feverDuration = 10f; // 피버 모드 지속 시간 (초)
     public float feverSpeedMultiplier = 3f; // 피버 모드 속도 배율
+    public float feverMapSpeedMultiplier = 2f; // 피버 모드 속도 배율
+    public float feverItemSpeedMultiplier = 2f; // 피버 모드 속도 배율
     public bool isFeverMode = false; // 현재 피버 모드 상태인지
     private float originalMoveSpeed; // 원래 이동 속도 저장
 
@@ -210,6 +212,9 @@ public class CharactorMove : MonoBehaviour
         isInvincible = true; // 무적 활성화
         p_Animator.SetBool("IsFever", true);
 
+        GameManager.Instance.itemSpeedMultiply = feverItemSpeedMultiplier;
+        GameManager.Instance.mapSpeedMultiply = feverMapSpeedMultiplier;
+
         // 이동 속도 증가
         moveSpeed = originalMoveSpeed * feverSpeedMultiplier;
 
@@ -239,6 +244,8 @@ public class CharactorMove : MonoBehaviour
         spriteRenderer.color = originalColor; // 원래 색상으로 복구
         p_Animator.SetBool("IsFever", false);
         feverModeChunk.SetActive(false);
+        GameManager.Instance.mapSpeedMultiply = 1f;
+        GameManager.Instance.itemSpeedMultiply = 1f;
         BroAudio.SetVolume(BroAudioType.Music, 1f, 1f);
         BroAudio.Stop(feverBgm, 1f);
         Debug.Log("피버 모드 종료!");

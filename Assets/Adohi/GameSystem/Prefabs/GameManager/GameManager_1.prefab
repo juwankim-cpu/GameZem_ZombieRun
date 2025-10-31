@@ -8486,10 +8486,15 @@ MonoBehaviour:
   character: {fileID: 5164183369691523609}
   enemyManager: {fileID: 9202733915181835469}
   scorePerSecond: 1
-  speedMultiply: 1
+  scorePerSecondMultiplyOnFever: 3
+  mapSpeedMultiply: 1
+  itemSpeedMultiply: 1
   zoomStartPPU: 20
   zoomEndPPU: 16
   zoomDuration: 2
+  maintainAspectRatio: 1
+  targetAspect: 1.7777778
+  baseOrthographicSize: 5
   joystickCanvas: {fileID: 5092446640932056929}
   buttonCanvas: {fileID: 5277234167434958871}
   tutorials: {fileID: 631153316658747559}
@@ -9668,9 +9673,25 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 11400000, guid: 73ea567389bac114aac405527c5c5822, type: 2}
     - target: {fileID: 3256491090811963394, guid: 97db64890f2d5d749ab665dda9805ed0, type: 3}
+      propertyPath: feverSpeedMultiplier
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3256491090811963394, guid: 97db64890f2d5d749ab665dda9805ed0, type: 3}
       propertyPath: feverBgm._sourceAsset
       value: 
       objectReference: {fileID: 11400000, guid: a185eb1e4e7e36b4699fc29168952c78, type: 2}
+    - target: {fileID: 3256491090811963394, guid: 97db64890f2d5d749ab665dda9805ed0, type: 3}
+      propertyPath: feverMapSpeedMultiplier
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 3256491090811963394, guid: 97db64890f2d5d749ab665dda9805ed0, type: 3}
+      propertyPath: feverItemSpeedMultiplier
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3256491090811963394, guid: 97db64890f2d5d749ab665dda9805ed0, type: 3}
+      propertyPath: feverObjectSpeedMultiplier
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 3256491090811963394, guid: 97db64890f2d5d749ab665dda9805ed0, type: 3}
       propertyPath: hitSfx.<DebugObject>k__BackingField
       value: 
@@ -9681,11 +9702,11 @@ PrefabInstance:
       objectReference: {fileID: 50484978159782694}
     - target: {fileID: 6816549462212704945, guid: 97db64890f2d5d749ab665dda9805ed0, type: 3}
       propertyPath: m_Color.b
-      value: 0.99735105
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6816549462212704945, guid: 97db64890f2d5d749ab665dda9805ed0, type: 3}
       propertyPath: m_Color.g
-      value: 0.99978894
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6816549462212704945, guid: 97db64890f2d5d749ab665dda9805ed0, type: 3}
       propertyPath: m_SortingOrder

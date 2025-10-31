@@ -131,6 +131,18 @@ PrefabInstance:
       propertyPath: _source
       value: 
       objectReference: {fileID: 591014963}
+    - target: {fileID: 3217114316418368332, guid: d4c497e94e502654f96f2ca7869e708f, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3323440295454200032, guid: d4c497e94e502654f96f2ca7869e708f, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3932698043793026345, guid: d4c497e94e502654f96f2ca7869e708f, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4446659305950635394, guid: d4c497e94e502654f96f2ca7869e708f, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -171,6 +183,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4500186864875675653, guid: d4c497e94e502654f96f2ca7869e708f, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4652889692584056895, guid: d4c497e94e502654f96f2ca7869e708f, type: 3}
       propertyPath: _source
       value: 
@@ -179,9 +195,21 @@ PrefabInstance:
       propertyPath: targetCamera
       value: 
       objectReference: {fileID: 591014959}
+    - target: {fileID: 7625429381370689709, guid: d4c497e94e502654f96f2ca7869e708f, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8515488629803339489, guid: d4c497e94e502654f96f2ca7869e708f, type: 3}
       propertyPath: m_Name
       value: GameManager_1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8595457684222819136, guid: d4c497e94e502654f96f2ca7869e708f, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8910999797653311363, guid: d4c497e94e502654f96f2ca7869e708f, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

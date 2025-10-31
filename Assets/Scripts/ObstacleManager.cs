@@ -160,14 +160,18 @@ public class ObstacleManager : MonoBehaviour
         // 씬이 바뀌어도 계속 실행되도록 무한 루프 설정
         while (true)
         {
-
             var obstacleSpawnInterval = Random.Range(minObstacleSpawnInterval, maxObstacleSpawnInterval);
+
+            float elapsed = 0f;
+            while (elapsed < obstacleSpawnInterval)
+            {
+                elapsed += Time.deltaTime * GameManager.Instance.mapSpeedMultiply;
+                yield return null;
+            }
 
             // 스테이지에 맞는 프리팹으로 장애물 생성
             GameObject prefab = GetPrefabByStage();
             SpawnObstacle(prefab);
-
-            yield return new WaitForSeconds(obstacleSpawnInterval);
         }
     }
 

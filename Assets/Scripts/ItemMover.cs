@@ -1,4 +1,5 @@
 using UnityEngine;
+using ZombieRun.Adohi.GameSystem;
 
 public class ItemMover : MonoBehaviour
 {
@@ -8,7 +9,7 @@ public class ItemMover : MonoBehaviour
     void Update()
     {
         // X축(왼쪽)으로 이동
-        transform.Translate(Vector3.left * moveSpeed * Time.deltaTime, Space.World);
+        transform.Translate(Vector3.left * moveSpeed * Time.deltaTime * GameManager.Instance.itemSpeedMultiply, Space.World);
 
         // 파괴 조건 검사 (X 위치가 minXPosition보다 작아지면 파괴)
         if (transform.position.x < minXPosition)

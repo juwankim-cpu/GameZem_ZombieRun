@@ -46,7 +46,13 @@ public class ItemManager : MonoBehaviour
     {
         while (true)
         {
-            yield return new WaitForSeconds(itemSpawnInterval);
+            float elapsed = 0f;
+            while (elapsed < itemSpawnInterval)
+            {
+                elapsed += Time.deltaTime * GameManager.Instance.mapSpeedMultiply;
+                yield return null;
+            }
+
             if (GameManager.Instance.IsPlaying)
             {
                 SpawnRandomItem();
@@ -57,8 +63,17 @@ public class ItemManager : MonoBehaviour
     // 랜덤한 위치에 HP 또는 Buff 아이템을 생성하는 메서드
     private void SpawnRandomItem()
     {
+        GameObject itemToSpawn;
         // HP 아이템 또는 Buff 아이템을 랜덤하게 선택하여 생성
-        GameObject itemToSpawn = Random.Range(0, 2) == 0 ? hpItemPrefab : buffItemPrefab;
+        if (GameManager.Instance.character.isFeverMode)
+        {
+            itemToSpawn = hpItemPrefab;
+        }
+        else
+        {
+            itemToSpawn = Random.Range(0, 2) == 0 ? hpItemPrefab : buffItemPrefab;
+
+        }
 
         if (itemToSpawn != null)
         {

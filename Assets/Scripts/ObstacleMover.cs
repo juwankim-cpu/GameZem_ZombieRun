@@ -1,4 +1,5 @@
 using UnityEngine;
+using ZombieRun.Adohi.GameSystem;
 
 public class ObstacleMover : MonoBehaviour
 {
@@ -16,7 +17,7 @@ public class ObstacleMover : MonoBehaviour
 
         // 1. X축(왼쪽)으로 이동
         // moveSpeed는 ObstacleManager로부터 랜덤 값을 전달받아 사용합니다.
-        transform.Translate(Vector3.left * moveSpeed * Time.deltaTime, Space.World);
+        transform.Translate(Vector3.left * moveSpeed * Time.deltaTime * GameManager.Instance.mapSpeedMultiply, Space.World);
 
         // 2. 파괴 조건 검사 (X 위치가 -10보다 작아지면 파괴)
         if (transform.position.x < minXPosition)

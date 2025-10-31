@@ -44,10 +44,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cccc666f608a91640a51f6014b05f9f9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hpManager: {fileID: 1298710736042607984, guid: aa4c88342942a8c4680ad4711d619dd4, type: 3}
   hpItemPrefab: {fileID: 3900197989190454381, guid: 3add3d091f9211d498660bab7dafa434, type: 3}
   buffItemPrefab: {fileID: 7245836209661824384, guid: efcab62efaf1657419a74c24c8da5810, type: 3}
   itemSpawnInterval: 5
-  spawnAreaRadius: 10
+  spawnXPosition: 10
+  minYPosition: -2
+  maxYPosition: 2
+  minMoveSpeed: 3
+  maxMoveSpeed: 7
+  minXPosition: -20
   hpRecoveryAmount: 5
   buffGainAmount: 5
+  itemGetSfx:
+    ID: 0
+    _sourceAsset: {fileID: 0}
+    <DebugObject>k__BackingField: {fileID: 54762959153028756}

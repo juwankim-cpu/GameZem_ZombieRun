@@ -69,7 +69,9 @@ namespace ZombieRun.Adohi.GameSystem
 
         [Header("Difficulty")]
         public float scorePerSecond = 1f;
-        public float speedMultiply = 1f;
+        public float scorePerSecondMultiplyOnFever = 2f;
+        public float mapSpeedMultiply = 1f;
+        public float itemSpeedMultiply = 1f;
 
         [Header("Camera Zoom")]
         public int zoomStartPPU = 100;
@@ -119,7 +121,6 @@ namespace ZombieRun.Adohi.GameSystem
         [Header("Mobile Mode UIs")]
         public List<GameObject> mobileModeUIs;
         public List<GameObject> pcModeUIs;
-
 
         void Awake()
         {
@@ -182,7 +183,7 @@ namespace ZombieRun.Adohi.GameSystem
 
             else
             {
-                IsTitleShowing = true;
+                IsTitleShowing = false;
 
 
             }
@@ -291,14 +292,14 @@ namespace ZombieRun.Adohi.GameSystem
 
             if (IsPlaying)
             {
-                currentScore.Value += scorePerSecond * Time.deltaTime * speedMultiply;
+                currentScore.Value += scorePerSecond * Time.deltaTime * (character.isFeverMode ? scorePerSecondMultiplyOnFever : 1f);
             }
 
             if (IsPlaying)
             {
 
                 currentHealth.Value -= healthDecreasePerSecond * difficulty * Time.deltaTime;
-                currentBoost.Value += 0.0001f * Time.deltaTime;
+                currentBoost.Value += 0.001f * Time.deltaTime;
             }
 
             if (Input.GetKeyDown(KeyCode.R))

@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using com.cyborgAssets.inspectorButtonPro;
+using ZombieRun.Adohi.GameSystem;
 
 namespace ZombieRun.Adohi.Evironment
 {
@@ -85,7 +86,7 @@ namespace ZombieRun.Adohi.Evironment
 
             foreach (var bgInstance in backgroundInstances)
             {
-                bgInstance.gameObject.transform.position += Vector3.left * moveSpeed * Time.deltaTime;
+                bgInstance.gameObject.transform.position += Vector3.left * moveSpeed * Time.deltaTime * GameManager.Instance.mapSpeedMultiply;
             }
             // 모든 배경을 왼쪽으로 이동
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using System;
 using com.cyborgAssets.inspectorButtonPro;
+using ZombieRun.Adohi.GameSystem;
 
 public class BackgroundObjectMover : MonoBehaviour
 {
@@ -84,11 +85,7 @@ public class BackgroundObjectMover : MonoBehaviour
     void Update()
     {
         // 모든 활성 오브젝트 이동
-        if (!GameStatus.sitDown)
-        {
-            MoveObjects();
-
-        }
+        MoveObjects();
 
         // 화면 밖으로 나간 오브젝트 제거
         CheckAndDespawnObjects();
@@ -377,7 +374,7 @@ public class BackgroundObjectMover : MonoBehaviour
         {
             if (bgObj.gameObject != null)
             {
-                bgObj.gameObject.transform.position += Vector3.left * moveSpeed * Time.deltaTime;
+                bgObj.gameObject.transform.position += Vector3.left * moveSpeed * Time.deltaTime * GameManager.Instance.mapSpeedMultiply;
             }
         }
     }
